@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Search, Filter, Play, Pause, CheckCircle, Circle } from "lucide-react";
 import { api } from "@/lib/api";
+import { CreateCampaignModal } from "@/components/campaigns/CreateCampaignModal";
 
 export default function Campaigns() {
   const { data: campaigns, isLoading } = useQuery({
@@ -63,10 +64,12 @@ export default function Campaigns() {
         title="Campaigns"
         subtitle="Manage your AI-powered outreach campaigns"
       >
-        <Button className="sparq-gradient hover:sparq-gradient-hover text-white">
-          <Plus className="h-4 w-4 mr-2" />
-          Create New Campaign
-        </Button>
+        <CreateCampaignModal>
+          <Button className="sparq-gradient hover:sparq-gradient-hover text-white">
+            <Plus className="h-4 w-4 mr-2" />
+            Create New Campaign
+          </Button>
+        </CreateCampaignModal>
       </Header>
 
       <main className="flex-1 p-6">

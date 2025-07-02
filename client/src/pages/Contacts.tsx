@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Plus, Search, Filter, Download, Flame, Thermometer, Snowflake, Handshake } from "lucide-react";
 import { api } from "@/lib/api";
 import { formatDistanceToNow } from "date-fns";
+import { AddContactModal } from "@/components/contacts/AddContactModal";
 
 export default function Contacts() {
   const { data: contacts, isLoading } = useQuery({
@@ -79,10 +80,12 @@ export default function Contacts() {
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button className="sparq-gradient hover:sparq-gradient-hover text-white">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Contact
-          </Button>
+          <AddContactModal>
+            <Button className="sparq-gradient hover:sparq-gradient-hover text-white">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Contact
+            </Button>
+          </AddContactModal>
         </div>
       </Header>
 

@@ -99,7 +99,7 @@ export function Sidebar() {
             {integrations.map((integration) => (
               <Link
                 key={integration.name}
-                href="#"
+                href="/integrations"
                 className="text-gray-700 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-lg"
               >
                 <integration.icon

@@ -7,6 +7,9 @@ import Dashboard from "@/pages/Dashboard";
 import Campaigns from "@/pages/Campaigns";
 import Contacts from "@/pages/Contacts";
 import Setup from "@/pages/Setup";
+import AIInsights from "@/pages/AIInsights";
+import Sequences from "@/pages/Sequences";
+import Integrations from "@/pages/Integrations";
 import NotFound from "@/pages/not-found";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { useState } from "react";
@@ -22,6 +25,9 @@ function Router() {
           <Route path="/" component={Dashboard} />
           <Route path="/campaigns" component={Campaigns} />
           <Route path="/contacts" component={Contacts} />
+          <Route path="/insights" component={AIInsights} />
+          <Route path="/sequences" component={Sequences} />
+          <Route path="/integrations" component={Integrations} />
           <Route path="/setup" component={Setup} />
           <Route component={NotFound} />
         </Switch>
