@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/layout/Header";
 import { MetricsCard } from "@/components/dashboard/MetricsCard";
@@ -5,12 +6,15 @@ import { CampaignChart } from "@/components/charts/CampaignChart";
 import { InsightsPanel } from "@/components/dashboard/InsightsPanel";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { ActiveCampaigns } from "@/components/dashboard/ActiveCampaigns";
+import { EnhancedCampaignModal } from "@/components/campaigns/EnhancedCampaignModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Users, MessageSquare, Target, Calendar, ArrowUp } from "lucide-react";
 import { api } from "@/lib/api";
 
 export default function Dashboard() {
+  const [showCreateCampaign, setShowCreateCampaign] = useState(false);
+  
   const { data: stats, isLoading } = useQuery({
     queryKey: ["/api/dashboard/stats/1"],
     queryFn: () => api.getDashboardStats(1),
@@ -33,7 +37,10 @@ export default function Dashboard() {
         title="Dashboard"
         subtitle="Welcome back! Here's your AI SDR performance overview."
       >
-        <Button className="sparq-gradient hover:sparq-gradient-hover text-white">
+        <Button 
+          className="sparq-gradient hover:sparq-gradient-hover text-white"
+          onClick={() => setShowCreateCampaign(true)}
+        >
           <Plus className="h-4 w-4 mr-2" />
           New Campaign
         </Button>
@@ -136,6 +143,12 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </main>
+
+      <EnhancedCampaignModal
+        open={showCreateCampaign}
+        onOpenChange={setShowCreateCampaign}
+        userId={1}
+      />
     </div>
   );
 }
