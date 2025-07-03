@@ -142,23 +142,31 @@ export default function Onboarding() {
   const submitOnboarding = useMutation({
     mutationFn: async () => {
       // Create company
-      const company = await api.createCompany({
-        name: formData.companyName,
-        userId: currentUser.id,
-        size: formData.companySize,
-        industry: formData.industry,
-        website: formData.website,
-        description: formData.description,
-        targetMarket: formData.targetMarket,
-        idealCustomerProfile: formData.idealCustomerProfile,
-        valueProposition: formData.valueProposition,
-        salesProcess: formData.salesProcess,
-        geographicFocus: formData.geographicFocus,
-        targetIcp: formData.idealCustomerProfile,
-      });
+      const company = await fetch('/api/company', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.companyName,
+          userId: currentUser.id,
+          size: formData.companySize,
+          industry: formData.industry,
+          website: formData.website,
+          description: formData.description,
+          targetMarket: formData.targetMarket,
+          idealCustomerProfile: formData.idealCustomerProfile,
+          valueProposition: formData.valueProposition,
+          salesProcess: formData.salesProcess,
+          geographicFocus: formData.geographicFocus,
+          targetIcp: formData.idealCustomerProfile,
+        }),
+      }).then(res => res.json());
 
       // Update user as setup complete
-      await api.updateUser(currentUser.id, { isSetupComplete: true });
+      await fetch(`/api/user/${currentUser.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isSetupComplete: true }),
+      }).then(res => res.json());
 
       return company;
     },
@@ -166,9 +174,11 @@ export default function Onboarding() {
       toast({ title: "Welcome to SparqAI! Your account is now set up." });
       queryClient.invalidateQueries({ queryKey: ['/api/companies'] });
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
-      setLocation("/");
+      // Force a page reload to update the user state
+      window.location.href = "/";
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Onboarding error:', error);
       toast({ title: "Setup failed. Please try again.", variant: "destructive" });
     },
   });

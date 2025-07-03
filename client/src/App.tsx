@@ -14,10 +14,25 @@ import Settings from "@/pages/Settings";
 import Onboarding from "@/pages/Onboarding";
 import NotFound from "@/pages/not-found";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { useState } from "react";
+import React, { useState } from "react";
 
 function Router() {
-  const [currentUser] = useState({ id: 1, email: "alex@company.com", firstName: "Alex", lastName: "Johnson", isSetupComplete: false });
+  const [currentUser, setCurrentUser] = useState({ id: 1, email: "alex@company.com", firstName: "Alex", lastName: "Johnson", isSetupComplete: false });
+  
+  // Check user setup status on app load
+  React.useEffect(() => {
+    const checkUserSetup = async () => {
+      try {
+        const response = await fetch('/api/user/1');
+        const userData = await response.json();
+        setCurrentUser(prev => ({ ...prev, isSetupComplete: userData.isSetupComplete || false }));
+      } catch (error) {
+        console.error('Error checking user setup:', error);
+      }
+    };
+    
+    checkUserSetup();
+  }, []);
   
   // Show onboarding if user hasn't completed setup
   if (!currentUser.isSetupComplete) {
