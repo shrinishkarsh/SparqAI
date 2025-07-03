@@ -27,8 +27,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { useLocation } from "wouter";
-
-const currentUser = { id: 1, email: "alex@company.com", firstName: "Alex", lastName: "Johnson" };
+import { useAuth } from "@/hooks/useAuth";
 
 interface OnboardingData {
   // Company Information
@@ -99,6 +98,7 @@ export default function Onboarding() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   
   const [formData, setFormData] = useState<OnboardingData>({
     companyName: "",
@@ -141,13 +141,17 @@ export default function Onboarding() {
 
   const submitOnboarding = useMutation({
     mutationFn: async () => {
+      if (!user?.id) {
+        throw new Error('User not authenticated');
+      }
+      
       // Create company
       const company = await fetch('/api/company', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.companyName,
-          userId: currentUser.id,
+          userId: user.id,
           size: formData.companySize,
           industry: formData.industry,
           website: formData.website,
@@ -162,7 +166,7 @@ export default function Onboarding() {
       }).then(res => res.json());
 
       // Update user as setup complete
-      await fetch(`/api/user/${currentUser.id}`, {
+      await fetch(`/api/user/${user.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isSetupComplete: true }),
@@ -173,9 +177,9 @@ export default function Onboarding() {
     onSuccess: () => {
       toast({ title: "Welcome to SparqAI! Your account is now set up." });
       queryClient.invalidateQueries({ queryKey: ['/api/companies'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
-      // Force a page reload to update the user state
-      window.location.href = "/";
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+      // Redirect to dashboard
+      setLocation("/");
     },
     onError: (error) => {
       console.error('Onboarding error:', error);
