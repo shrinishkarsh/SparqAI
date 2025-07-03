@@ -6,9 +6,39 @@ import {
   insertUserSchema, insertCompanySchema, insertCampaignSchema, 
   insertContactSchema, insertActivitySchema, insertIntegrationSchema, insertProductSchema
 } from "@shared/schema";
+import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
+import { pool } from "./db";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth routes (simplified for demo)
+  // Session management
+  const pgSession = connectPgSimple(session);
+  
+  app.use(session({
+    store: new pgSession({
+      pool: pool,
+      tableName: 'user_sessions',
+      createTableIfMissing: true,
+    }),
+    secret: process.env.SESSION_SECRET || 'your-secret-key-here',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    },
+  }));
+
+  // Auth middleware
+  const requireAuth = (req: any, res: any, next: any) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    next();
+  };
+
+  // Auth routes
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { email, password } = req.body;
@@ -17,6 +47,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user || user.password !== password) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
+      
+      // Store user ID in session
+      (req as any).session.userId = user.id;
       
       res.json({ user: { ...user, password: undefined } });
     } catch (error) {
@@ -34,16 +67,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const user = await storage.createUser(userData);
+      
+      // Store user ID in session after registration
+      (req as any).session.userId = user.id;
+      
       res.json({ user: { ...user, password: undefined } });
     } catch (error) {
       res.status(400).json({ message: "Registration failed" });
     }
   });
 
+  app.post("/api/auth/logout", (req, res) => {
+    req.session?.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      res.clearCookie('connect.sid');
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+
+  app.get("/api/auth/me", requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).session.userId;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({ user: { ...user, password: undefined } });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
   // User routes
-  app.get("/api/user/:id", async (req, res) => {
+  app.get("/api/user/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const currentUserId = (req as any).session.userId;
+      
+      // Users can only access their own data
+      if (id !== currentUserId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
       const user = await storage.getUser(id);
       
       if (!user) {
@@ -56,9 +125,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/user/:id", async (req, res) => {
+  app.patch("/api/user/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const currentUserId = (req as any).session.userId;
+      
+      // Users can only update their own data
+      if (id !== currentUserId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
       const updates = req.body;
       
       const user = await storage.updateUser(id, updates);

@@ -12,30 +12,38 @@ import Sequences from "@/pages/Sequences";
 import Integrations from "@/pages/Integrations";
 import Settings from "@/pages/Settings";
 import Onboarding from "@/pages/Onboarding";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
 import NotFound from "@/pages/not-found";
 import { Sidebar } from "@/components/layout/Sidebar";
-import React, { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { Loader2 } from "lucide-react";
 
 function Router() {
-  const [currentUser, setCurrentUser] = useState({ id: 1, email: "alex@company.com", firstName: "Alex", lastName: "Johnson", isSetupComplete: false });
+  const { user, isLoading, isAuthenticated } = useAuth();
   
-  // Check user setup status on app load
-  React.useEffect(() => {
-    const checkUserSetup = async () => {
-      try {
-        const response = await fetch('/api/user/1');
-        const userData = await response.json();
-        setCurrentUser(prev => ({ ...prev, isSetupComplete: userData.isSetupComplete || false }));
-      } catch (error) {
-        console.error('Error checking user setup:', error);
-      }
-    };
-    
-    checkUserSetup();
-  }, []);
+  // Show loading spinner while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+  
+  // Show login/register pages if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <Switch>
+        <Route path="/register" component={Register} />
+        <Route path="/login" component={Login} />
+        <Route component={Login} />
+      </Switch>
+    );
+  }
   
   // Show onboarding if user hasn't completed setup
-  if (!currentUser.isSetupComplete) {
+  if (!user?.isSetupComplete) {
     return <Onboarding />;
   }
   

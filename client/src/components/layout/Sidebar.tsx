@@ -14,8 +14,11 @@ import {
   HelpCircle,
   Zap,
   ChevronUp,
-  Link as LinkIcon
+  Link as LinkIcon,
+  LogOut
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: ChartLine },
@@ -28,6 +31,7 @@ const navigation = [
 
 export function Sidebar() {
   const [location] = useLocation();
+  const { user, logout } = useAuth();
 
   return (
     <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg border-r border-gray-200">
@@ -130,15 +134,28 @@ export function Sidebar() {
       <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
         <div className="flex items-center">
           <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-            <span className="text-sm font-medium text-gray-700">AJ</span>
+            <span className="text-sm font-medium text-gray-700">
+              {user?.firstName?.charAt(0) || user?.username?.charAt(0) || 'U'}
+              {user?.lastName?.charAt(0) || ''}
+            </span>
           </div>
           <div className="ml-3 flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">Alex Johnson</p>
-            <p className="text-xs text-gray-500 truncate">alex@company.com</p>
+            <p className="text-sm font-medium text-gray-900 truncate">
+              {user?.firstName && user?.lastName 
+                ? `${user.firstName} ${user.lastName}` 
+                : user?.username || 'User'
+              }
+            </p>
+            <p className="text-xs text-gray-500 truncate">{user?.email}</p>
           </div>
-          <button className="flex-shrink-0 text-gray-400 hover:text-gray-600">
-            <ChevronUp className="h-4 w-4" />
-          </button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => logout()}
+            className="flex-shrink-0 text-gray-400 hover:text-gray-600 p-1"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>
