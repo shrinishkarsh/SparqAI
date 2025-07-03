@@ -103,14 +103,14 @@ The application uses a relational database with the following main entities:
 - **NODE_ENV**: Environment mode (development/production)
 
 ## Recent Changes
-- July 02, 2025: Enhanced application with comprehensive feature implementation
-  - Created advanced campaign creation modal with multi-step wizard
-  - Implemented AI Insights panel with real-time analytics and recommendations  
-  - Built sequence management system for email and LinkedIn automation
-  - Added integrations dashboard for LinkedIn, Email, and CRM connections
-  - Enhanced contact management with AI-powered lead enrichment
-  - Improved UI/UX with polished design system and better navigation
-  - Added functional routing for all new features
+- July 03, 2025: Restructured Settings page and removed AI Insights
+  - Completely removed AI Insights features from the application
+  - Restructured Settings page to have only two tabs: Integrations and Settings
+  - Created comprehensive Integrations tab for LinkedIn, Email, and CRM setup
+  - Built unified Settings tab consolidating account, API, notifications, billing, and privacy
+  - Enhanced campaign creation with 4-step wizard including product selection and list upload options
+  - Updated database schema with products table and enhanced campaigns functionality
+  - Simplified navigation by removing AI Insights from sidebar
 
 ## Changelog
 - July 02, 2025. Initial setup and comprehensive feature development
