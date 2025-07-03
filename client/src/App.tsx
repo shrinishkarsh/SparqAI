@@ -11,12 +11,18 @@ import Analytics from "@/pages/Analytics";
 import Sequences from "@/pages/Sequences";
 import Integrations from "@/pages/Integrations";
 import Settings from "@/pages/Settings";
+import Onboarding from "@/pages/Onboarding";
 import NotFound from "@/pages/not-found";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { useState } from "react";
 
 function Router() {
-  const [currentUser] = useState({ id: 1, email: "alex@company.com", firstName: "Alex", lastName: "Johnson" });
+  const [currentUser] = useState({ id: 1, email: "alex@company.com", firstName: "Alex", lastName: "Johnson", isSetupComplete: false });
+  
+  // Show onboarding if user hasn't completed setup
+  if (!currentUser.isSetupComplete) {
+    return <Onboarding />;
+  }
   
   return (
     <div className="flex h-screen bg-gray-50">
@@ -31,6 +37,7 @@ function Router() {
           <Route path="/sequences" component={Sequences} />
           <Route path="/settings" component={Settings} />
           <Route path="/setup" component={Setup} />
+          <Route path="/onboarding" component={Onboarding} />
           <Route component={NotFound} />
         </Switch>
       </div>
