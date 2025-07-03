@@ -21,7 +21,6 @@ const navigation = [
   { name: "Campaigns", href: "/campaigns", icon: Megaphone, badge: "3" },
   { name: "Contacts", href: "/contacts", icon: Users, count: "2,847" },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
-  { name: "AI Insights", href: "/insights", icon: Brain, indicator: true },
   { name: "Sequences", href: "/sequences", icon: Workflow },
 ];
 
@@ -82,9 +81,7 @@ export function Sidebar() {
                     {item.count}
                   </span>
                 )}
-                {item.indicator && (
-                  <span className="ml-auto w-2 h-2 bg-green-400 rounded-full"></span>
-                )}
+
               </Link>
             );
           })}

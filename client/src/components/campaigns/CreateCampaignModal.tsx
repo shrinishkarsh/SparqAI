@@ -1,448 +1,587 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { Plus, Upload, Brain, Mail, Linkedin, FileSpreadsheet, Users, Target, Zap } from "lucide-react";
+import { api } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { z } from "zod";
-import { Plus, Target, Mail, Linkedin, Users, Sparkles, Clock } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+
+const currentUser = { id: 1, email: "alex@company.com", firstName: "Alex", lastName: "Johnson" };
 
 const campaignSchema = z.object({
   name: z.string().min(1, "Campaign name is required"),
-  targetAudience: z.string().min(1, "Target audience is required"),
-  objective: z.string().min(1, "Campaign objective is required"),
-  tone: z.enum(["professional", "casual", "friendly"]),
+  description: z.string().min(1, "Description is required"),
+  productId: z.number().min(1, "Product selection is required"),
   channels: z.array(z.string()).min(1, "At least one channel is required"),
-  sequences: z.object({
-    emailCount: z.number().min(1).max(10),
-    linkedinCount: z.number().min(0).max(5),
-    delayDays: z.number().min(1).max(30)
-  })
+  listSource: z.enum(["upload", "ai_generated"]),
+  strategy: z.string().min(1, "Strategy is required"),
+  targetAudience: z.string().optional(),
 });
 
-type CampaignForm = z.infer<typeof campaignSchema>;
+const CHANNEL_OPTIONS = [
+  { id: "email", label: "Email", icon: Mail, description: "Traditional email outreach" },
+  { id: "linkedin", label: "LinkedIn", icon: Linkedin, description: "LinkedIn connection requests and messages" },
+];
+
+const STRATEGY_OPTIONS = [
+  { id: "cold_outreach", label: "Cold Outreach", description: "Direct outreach to cold prospects" },
+  { id: "warm_introduction", label: "Warm Introduction", description: "Leveraging existing connections" },
+  { id: "content_based", label: "Content-Based", description: "Lead with valuable content" },
+  { id: "event_triggered", label: "Event-Triggered", description: "Based on specific triggers or events" },
+];
 
 interface CreateCampaignModalProps {
-  children: React.ReactNode;
+  trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function CreateCampaignModal({ children }: CreateCampaignModalProps) {
-  const [open, setOpen] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
+export function CreateCampaignModal({ trigger, open, onOpenChange }: CreateCampaignModalProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [step, setStep] = useState(1);
+  const [selectedChannels, setSelectedChannels] = useState<string[]>([]);
+  const [listSource, setListSource] = useState<"upload" | "ai_generated">("upload");
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const form = useForm<CampaignForm>({
+  const modalOpen = open !== undefined ? open : isOpen;
+  const setModalOpen = onOpenChange || setIsOpen;
+
+  // Fetch company data
+  const { data: company } = useQuery({
+    queryKey: ['/api/companies', currentUser.id],
+    queryFn: () => api.getCompanyByUserId(currentUser.id),
+  });
+
+  // Fetch products
+  const { data: products = [], isLoading: productsLoading } = useQuery({
+    queryKey: ['/api/products', currentUser.id],
+    queryFn: () => api.getProductsByUserId(currentUser.id),
+  });
+
+  const form = useForm({
     resolver: zodResolver(campaignSchema),
     defaultValues: {
       name: "",
-      targetAudience: "",
-      objective: "",
-      tone: "professional",
+      description: "",
+      productId: 0,
       channels: [],
-      sequences: {
-        emailCount: 3,
-        linkedinCount: 2,
-        delayDays: 3
-      }
-    }
+      listSource: "upload" as const,
+      strategy: "",
+      targetAudience: "",
+    },
   });
 
   const createCampaignMutation = useMutation({
-    mutationFn: async (data: CampaignForm) => {
-      const response = await fetch('/api/campaigns', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: 1,
-          companyId: 1,
-          name: data.name,
-          targetAudience: data.targetAudience,
-          objective: data.objective,
-          tone: data.tone,
-          channels: data.channels,
-          sequences: data.sequences,
-          status: 'launching'
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to create campaign');
-      }
-      
-      return response.json();
-    },
+    mutationFn: (data: any) => api.createCampaign({
+      ...data,
+      userId: currentUser.id,
+      companyId: company?.id,
+      status: "draft",
+    }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/campaigns"] });
-      toast({
-        title: "Campaign Created",
-        description: "Your AI-powered campaign is being set up and will launch shortly."
-      });
-      setOpen(false);
+      toast({ title: "Campaign created successfully!" });
+      queryClient.invalidateQueries({ queryKey: ['/api/campaigns'] });
+      setModalOpen(false);
+      setStep(1);
       form.reset();
-      setCurrentStep(0);
+      setSelectedChannels([]);
+      setUploadedFile(null);
     },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create campaign",
-        variant: "destructive"
-      });
-    }
+    onError: () => {
+      toast({ title: "Failed to create campaign", variant: "destructive" });
+    },
   });
 
-  const onSubmit = (data: CampaignForm) => {
-    createCampaignMutation.mutate(data);
+  const handleChannelToggle = (channelId: string) => {
+    const updated = selectedChannels.includes(channelId)
+      ? selectedChannels.filter(id => id !== channelId)
+      : [...selectedChannels, channelId];
+    setSelectedChannels(updated);
+    form.setValue("channels", updated);
   };
 
-  const steps = [
-    { id: 'basics', title: 'Campaign Basics', icon: Target },
-    { id: 'audience', title: 'Target Audience', icon: Users },
-    { id: 'channels', title: 'Channels & Sequences', icon: Mail },
-    { id: 'review', title: 'Review & Launch', icon: Sparkles }
-  ];
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const allowedTypes = ['.csv', '.xlsx', '.xls'];
+      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+      
+      if (!allowedTypes.includes(fileExtension)) {
+        toast({ 
+          title: "Invalid file type", 
+          description: "Please upload a CSV or Excel file",
+          variant: "destructive" 
+        });
+        return;
+      }
+      
+      setUploadedFile(file);
+    }
+  };
 
-  const toggleChannel = (channel: string) => {
-    const current = form.getValues('channels');
-    const updated = current.includes(channel) 
-      ? current.filter(c => c !== channel)
-      : [...current, channel];
-    form.setValue('channels', updated);
+  const onSubmit = (data: any) => {
+    createCampaignMutation.mutate({
+      ...data,
+      channels: selectedChannels,
+      listSource,
+      totalContacts: uploadedFile ? 0 : undefined, // Will be populated after file processing
+    });
+  };
+
+  const nextStep = () => {
+    if (step < 4) setStep(step + 1);
+  };
+
+  const prevStep = () => {
+    if (step > 1) setStep(step - 1);
+  };
+
+  const renderStepContent = () => {
+    switch (step) {
+      case 1:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-semibold">Campaign Basics</h3>
+              <p className="text-gray-600">Let's start with the fundamental details</p>
+            </div>
+
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Campaign Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Q1 Enterprise Outreach" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Describe your campaign objectives and approach..."
+                      className="min-h-[100px]"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="strategy"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Outreach Strategy</FormLabel>
+                  <FormControl>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select your strategy" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {STRATEGY_OPTIONS.map((strategy) => (
+                          <SelectItem key={strategy.id} value={strategy.id}>
+                            <div>
+                              <div className="font-medium">{strategy.label}</div>
+                              <div className="text-sm text-gray-600">{strategy.description}</div>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-semibold">Select Product</h3>
+              <p className="text-gray-600">Choose the product you want to promote</p>
+            </div>
+
+            {productsLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="p-4 border rounded-lg animate-pulse">
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                ))}
+              </div>
+            ) : products.length === 0 ? (
+              <Card className="text-center py-8">
+                <CardContent>
+                  <Target className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No products found</h3>
+                  <p className="text-gray-600 mb-4">
+                    You need to create products before starting campaigns
+                  </p>
+                  <Button variant="outline" onClick={() => setModalOpen(false)}>
+                    Go to Products
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <FormField
+                control={form.control}
+                name="productId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <div className="grid gap-3">
+                        {products.map((product: any) => (
+                          <Card 
+                            key={product.id} 
+                            className={`cursor-pointer transition-all hover:shadow-md ${
+                              field.value === product.id ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                            }`}
+                            onClick={() => field.onChange(product.id)}
+                          >
+                            <CardHeader className="pb-3">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <CardTitle className="text-base">{product.name}</CardTitle>
+                                  <CardDescription>{product.category}</CardDescription>
+                                </div>
+                                <Badge variant="outline">{product.price}</Badge>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="pt-0">
+                              <p className="text-sm text-gray-600 line-clamp-2">
+                                {product.description}
+                              </p>
+                              {product.targetAudience && (
+                                <div className="mt-2 pt-2 border-t">
+                                  <p className="text-xs text-gray-500">
+                                    <strong>Target:</strong> {product.targetAudience}
+                                  </p>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-semibold">Choose Channels</h3>
+              <p className="text-gray-600">Select how you want to reach your prospects</p>
+            </div>
+
+            <div className="grid gap-4">
+              {CHANNEL_OPTIONS.map((channel) => {
+                const Icon = channel.icon;
+                const isSelected = selectedChannels.includes(channel.id);
+                
+                return (
+                  <Card 
+                    key={channel.id}
+                    className={`cursor-pointer transition-all hover:shadow-md ${
+                      isSelected ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                    }`}
+                    onClick={() => handleChannelToggle(channel.id)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${
+                          isSelected ? 'bg-blue-500 text-white' : 'bg-gray-100'
+                        }`}>
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium">{channel.label}</h4>
+                          <p className="text-sm text-gray-600">{channel.description}</p>
+                        </div>
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={() => handleChannelToggle(channel.id)}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {selectedChannels.length === 0 && (
+              <p className="text-sm text-red-600 text-center">
+                Please select at least one channel to continue
+              </p>
+            )}
+          </div>
+        );
+
+      case 4:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-semibold">Contact List</h3>
+              <p className="text-gray-600">How do you want to build your prospect list?</p>
+            </div>
+
+            <div className="grid gap-4">
+              <Card 
+                className={`cursor-pointer transition-all hover:shadow-md ${
+                  listSource === "upload" ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                }`}
+                onClick={() => {
+                  setListSource("upload");
+                  form.setValue("listSource", "upload");
+                }}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${
+                      listSource === "upload" ? 'bg-blue-500 text-white' : 'bg-gray-100'
+                    }`}>
+                      <Upload className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium">Upload Your List</h4>
+                      <p className="text-sm text-gray-600">Upload a CSV or Excel file with your contacts</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card 
+                className={`cursor-pointer transition-all hover:shadow-md ${
+                  listSource === "ai_generated" ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                }`}
+                onClick={() => {
+                  setListSource("ai_generated");
+                  form.setValue("listSource", "ai_generated");
+                }}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${
+                      listSource === "ai_generated" ? 'bg-blue-500 text-white' : 'bg-gray-100'
+                    }`}>
+                      <Brain className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium">AI-Generated List</h4>
+                      <p className="text-sm text-gray-600">Let AI find prospects based on your criteria</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {listSource === "upload" && (
+              <div className="space-y-4">
+                <Separator />
+                <div>
+                  <Label htmlFor="file-upload">Upload Contact List</Label>
+                  <div className="mt-2">
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <FileSpreadsheet className="w-8 h-8 mb-2 text-gray-400" />
+                        <p className="mb-2 text-sm text-gray-500">
+                          <span className="font-semibold">Click to upload</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500">CSV or Excel files only</p>
+                      </div>
+                      <input
+                        id="file-upload"
+                        type="file"
+                        className="hidden"
+                        accept=".csv,.xlsx,.xls"
+                        onChange={handleFileUpload}
+                      />
+                    </label>
+                  </div>
+                  {uploadedFile && (
+                    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                      <p className="text-sm text-green-700">
+                        ✓ {uploadedFile.name} ({(uploadedFile.size / 1024).toFixed(1)} KB)
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {listSource === "ai_generated" && (
+              <div className="space-y-4">
+                <Separator />
+                <FormField
+                  control={form.control}
+                  name="targetAudience"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Target Audience Criteria</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Describe your ideal prospects: job titles, company size, industry, location, etc."
+                          className="min-h-[100px]"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded">
+                  <div className="flex items-start gap-2">
+                    <Zap className="h-4 w-4 text-blue-600 mt-0.5" />
+                    <div className="text-sm text-blue-700">
+                      <p className="font-medium">AI will find prospects matching:</p>
+                      <ul className="mt-1 list-disc list-inside text-xs space-y-1">
+                        <li>Your target audience criteria</li>
+                        <li>Your selected product's ideal customer profile</li>
+                        <li>Your company's industry and focus</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  const canProceed = () => {
+    switch (step) {
+      case 1:
+        return form.watch("name") && form.watch("description") && form.watch("strategy");
+      case 2:
+        return form.watch("productId") > 0;
+      case 3:
+        return selectedChannels.length > 0;
+      case 4:
+        return listSource === "ai_generated" || (listSource === "upload" && uploadedFile);
+      default:
+        return false;
+    }
+  };
+
+  const getStepTitle = () => {
+    switch (step) {
+      case 1: return "Campaign Basics";
+      case 2: return "Select Product";
+      case 3: return "Choose Channels";
+      case 4: return "Contact List";
+      default: return "Create Campaign";
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center">
-            <Sparkles className="h-5 w-5 mr-2 text-blue-600" />
-            Create AI-Powered Campaign
-          </DialogTitle>
+          <DialogTitle>Create New Campaign</DialogTitle>
+          <DialogDescription>
+            Set up a targeted outreach campaign in 4 simple steps
+          </DialogDescription>
         </DialogHeader>
 
-        {/* Progress Steps */}
-        <div className="flex items-center justify-between mb-8">
-          {steps.map((step, index) => {
-            const Icon = step.icon;
-            const isActive = index === currentStep;
-            const isCompleted = index < currentStep;
-            
-            return (
-              <div key={step.id} className="flex items-center">
-                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                  isCompleted 
-                    ? 'bg-green-100 border-green-500 text-green-600'
-                    : isActive 
-                      ? 'bg-blue-100 border-blue-500 text-blue-600'
-                      : 'bg-gray-100 border-gray-300 text-gray-400'
-                }`}>
-                  <Icon className="h-5 w-5" />
-                </div>
-                <div className="ml-3">
-                  <p className={`text-sm font-medium ${isActive ? 'text-blue-600' : 'text-gray-500'}`}>
-                    {step.title}
-                  </p>
-                </div>
-                {index < steps.length - 1 && (
-                  <div className={`w-16 h-0.5 mx-4 ${
-                    isCompleted ? 'bg-green-500' : 'bg-gray-300'
-                  }`} />
-                )}
+        {/* Progress Indicator */}
+        <div className="flex items-center justify-between mb-6">
+          {[1, 2, 3, 4].map((stepNum) => (
+            <div key={stepNum} className="flex items-center">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                stepNum <= step 
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-gray-200 text-gray-600'
+              }`}>
+                {stepNum}
               </div>
-            );
-          })}
+              {stepNum < 4 && (
+                <div className={`w-12 h-0.5 mx-2 ${
+                  stepNum < step ? 'bg-blue-500' : 'bg-gray-200'
+                }`} />
+              )}
+            </div>
+          ))}
         </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Step 1: Campaign Basics */}
-            {currentStep === 0 && (
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Target className="h-5 w-5 mr-2" />
-                      Campaign Basics
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Campaign Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., Q1 2025 Enterprise Outreach" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+            {renderStepContent()}
 
-                    <FormField
-                      control={form.control}
-                      name="objective"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Campaign Objective</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Describe what you want to achieve with this campaign..."
-                              className="min-h-[100px]"
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="tone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Communication Tone</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select tone" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="professional">Professional</SelectItem>
-                              <SelectItem value="casual">Casual</SelectItem>
-                              <SelectItem value="friendly">Friendly</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            {/* Step 2: Target Audience */}
-            {currentStep === 1 && (
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Users className="h-5 w-5 mr-2" />
-                      Target Audience
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <FormField
-                      control={form.control}
-                      name="targetAudience"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Describe Your Ideal Customer Profile</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="e.g., VP of Sales at SaaS companies with 50-200 employees, $10M+ ARR, based in North America..."
-                              className="min-h-[120px]"
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            {/* Step 3: Channels & Sequences */}
-            {currentStep === 2 && (
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Mail className="h-5 w-5 mr-2" />
-                      Outreach Channels
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                      <div 
-                        className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                          form.watch('channels').includes('email')
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        onClick={() => toggleChannel('email')}
-                      >
-                        <div className="flex items-center">
-                          <Mail className="h-8 w-8 text-blue-600 mr-3" />
-                          <div>
-                            <h3 className="font-medium">Email Sequences</h3>
-                            <p className="text-sm text-gray-500">Automated email outreach</p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div 
-                        className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                          form.watch('channels').includes('linkedin')
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        onClick={() => toggleChannel('linkedin')}
-                      >
-                        <div className="flex items-center">
-                          <Linkedin className="h-8 w-8 text-blue-600 mr-3" />
-                          <div>
-                            <h3 className="font-medium">LinkedIn Outreach</h3>
-                            <p className="text-sm text-gray-500">Connection requests & messages</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor="emailCount">Email Sequence Steps</Label>
-                        <Input
-                          id="emailCount"
-                          type="number"
-                          min="1"
-                          max="10"
-                          value={form.watch('sequences.emailCount')}
-                          onChange={(e) => form.setValue('sequences.emailCount', parseInt(e.target.value))}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="linkedinCount">LinkedIn Steps</Label>
-                        <Input
-                          id="linkedinCount"
-                          type="number"
-                          min="0"
-                          max="5"
-                          value={form.watch('sequences.linkedinCount')}
-                          onChange={(e) => form.setValue('sequences.linkedinCount', parseInt(e.target.value))}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="delayDays">Delay Between Steps (Days)</Label>
-                        <Input
-                          id="delayDays"
-                          type="number"
-                          min="1"
-                          max="30"
-                          value={form.watch('sequences.delayDays')}
-                          onChange={(e) => form.setValue('sequences.delayDays', parseInt(e.target.value))}
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            {/* Step 4: Review & Launch */}
-            {currentStep === 3 && (
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Sparkles className="h-5 w-5 mr-2" />
-                      Review & Launch
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-medium mb-2">Campaign Details</h4>
-                        <div className="space-y-2 text-sm">
-                          <div><span className="text-gray-500">Name:</span> {form.watch('name')}</div>
-                          <div><span className="text-gray-500">Tone:</span> {form.watch('tone')}</div>
-                          <div><span className="text-gray-500">Channels:</span> {form.watch('channels').join(', ')}</div>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-2">Sequence Configuration</h4>
-                        <div className="space-y-2 text-sm">
-                          <div><span className="text-gray-500">Email Steps:</span> {form.watch('sequences.emailCount')}</div>
-                          <div><span className="text-gray-500">LinkedIn Steps:</span> {form.watch('sequences.linkedinCount')}</div>
-                          <div><span className="text-gray-500">Delay:</span> {form.watch('sequences.delayDays')} days</div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <div className="flex items-start">
-                        <Sparkles className="h-5 w-5 text-blue-600 mr-2 mt-0.5" />
-                        <div>
-                          <h4 className="font-medium text-blue-900">AI Features Enabled</h4>
-                          <p className="text-sm text-blue-700 mt-1">
-                            Your campaign will use AI to generate personalized copy, enrich leads, 
-                            and optimize send times for maximum engagement.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            {/* Navigation */}
-            <div className="flex justify-between pt-6">
-              <Button 
-                type="button" 
-                variant="outline"
-                onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
-                disabled={currentStep === 0}
-              >
-                Previous
-              </Button>
-              
-              {currentStep < steps.length - 1 ? (
-                <Button 
-                  type="button"
-                  onClick={() => setCurrentStep(currentStep + 1)}
-                  className="sparq-gradient hover:sparq-gradient-hover text-white"
-                >
-                  Next
+            <div className="flex justify-between pt-6 border-t">
+              {step > 1 ? (
+                <Button type="button" variant="outline" onClick={prevStep}>
+                  Previous
                 </Button>
               ) : (
-                <Button 
-                  type="submit"
-                  disabled={createCampaignMutation.isPending}
-                  className="sparq-gradient hover:sparq-gradient-hover text-white"
-                >
-                  {createCampaignMutation.isPending ? (
-                    <>
-                      <Clock className="h-4 w-4 mr-2 animate-spin" />
-                      Creating Campaign...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      Launch Campaign
-                    </>
-                  )}
-                </Button>
+                <div />
               )}
+
+              <div className="flex gap-3">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                
+                {step < 4 ? (
+                  <Button 
+                    type="button" 
+                    onClick={nextStep}
+                    disabled={!canProceed()}
+                  >
+                    Next
+                  </Button>
+                ) : (
+                  <Button 
+                    type="submit" 
+                    disabled={!canProceed() || createCampaignMutation.isPending}
+                  >
+                    {createCampaignMutation.isPending ? "Creating..." : "Create Campaign"}
+                  </Button>
+                )}
+              </div>
             </div>
           </form>
         </Form>

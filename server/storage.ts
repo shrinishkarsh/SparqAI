@@ -1,8 +1,9 @@
 import { 
-  users, companies, campaigns, contacts, activities, integrations,
+  users, companies, campaigns, contacts, activities, integrations, products,
   type User, type InsertUser, type Company, type InsertCompany,
   type Campaign, type InsertCampaign, type Contact, type InsertContact,
-  type Activity, type InsertActivity, type Integration, type InsertIntegration
+  type Activity, type InsertActivity, type Integration, type InsertIntegration,
+  type Product, type InsertProduct
 } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
@@ -46,6 +47,14 @@ export interface IStorage {
   getIntegrationByType(userId: number, type: string): Promise<Integration | undefined>;
   createIntegration(integration: InsertIntegration): Promise<Integration>;
   updateIntegration(id: number, integration: Partial<InsertIntegration>): Promise<Integration | undefined>;
+
+  // Product operations
+  getProduct(id: number): Promise<Product | undefined>;
+  getProductsByUserId(userId: number): Promise<Product[]>;
+  getProductsByCompanyId(companyId: number): Promise<Product[]>;
+  createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined>;
+  deleteProduct(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -55,6 +64,7 @@ export class MemStorage implements IStorage {
   private contacts: Map<number, Contact> = new Map();
   private activities: Map<number, Activity> = new Map();
   private integrations: Map<number, Integration> = new Map();
+  private products: Map<number, Product> = new Map();
   
   private currentUserId = 1;
   private currentCompanyId = 1;
@@ -62,6 +72,7 @@ export class MemStorage implements IStorage {
   private currentContactId = 1;
   private currentActivityId = 1;
   private currentIntegrationId = 1;
+  private currentProductId = 1;
 
   constructor() {
     // Initialize with demo user
@@ -93,6 +104,14 @@ export class MemStorage implements IStorage {
       industry: "SaaS",
       size: "11-50 employees",
       targetIcp: "Mid-market SaaS companies with 100-500 employees",
+      targetMarket: "B2B SaaS companies in North America",
+      valueProposition: "Automate your sales development process with AI-powered outreach and lead generation",
+      idealCustomerProfile: "Sales teams at growing SaaS companies with 50-500 employees",
+      companyGoals: "Generate 1000 qualified leads per month",
+      salesProcess: "Outbound prospecting, qualification, demo booking, closing",
+      competitiveAdvantage: "AI-powered personalization and multi-channel outreach",
+      revenueModel: "SaaS subscription with per-seat pricing",
+      geographicFocus: "North America, Europe",
       createdAt: new Date(),
     };
     this.companies.set(1, demoCompany);
@@ -515,6 +534,44 @@ export class MemStorage implements IStorage {
     this.integrations.set(id, updatedIntegration);
     return updatedIntegration;
   }
+
+  // Product operations
+  async getProduct(id: number): Promise<Product | undefined> {
+    return this.products.get(id);
+  }
+
+  async getProductsByUserId(userId: number): Promise<Product[]> {
+    return Array.from(this.products.values()).filter(p => p.userId === userId);
+  }
+
+  async getProductsByCompanyId(companyId: number): Promise<Product[]> {
+    return Array.from(this.products.values()).filter(p => p.companyId === companyId);
+  }
+
+  async createProduct(insertProduct: InsertProduct): Promise<Product> {
+    const id = this.currentProductId++;
+    const product: Product = { 
+      ...insertProduct, 
+      id, 
+      createdAt: new Date(), 
+      updatedAt: new Date() 
+    };
+    this.products.set(id, product);
+    return product;
+  }
+
+  async updateProduct(id: number, updateProduct: Partial<InsertProduct>): Promise<Product | undefined> {
+    const existing = this.products.get(id);
+    if (!existing) return undefined;
+    
+    const updated = { ...existing, ...updateProduct, updatedAt: new Date() };
+    this.products.set(id, updated);
+    return updated;
+  }
+
+  async deleteProduct(id: number): Promise<boolean> {
+    return this.products.delete(id);
+  }
 }
 
 // Database Storage Implementation
@@ -694,6 +751,44 @@ export class DatabaseStorage implements IStorage {
       .where(eq(integrations.id, id))
       .returning();
     return integration || undefined;
+  }
+
+  // Product operations
+  async getProduct(id: number): Promise<Product | undefined> {
+    const [product] = await db.select().from(products).where(eq(products.id, id));
+    return product || undefined;
+  }
+
+  async getProductsByUserId(userId: number): Promise<Product[]> {
+    const userProducts = await db.select().from(products).where(eq(products.userId, userId));
+    return userProducts;
+  }
+
+  async getProductsByCompanyId(companyId: number): Promise<Product[]> {
+    const companyProducts = await db.select().from(products).where(eq(products.companyId, companyId));
+    return companyProducts;
+  }
+
+  async createProduct(insertProduct: InsertProduct): Promise<Product> {
+    const [product] = await db
+      .insert(products)
+      .values(insertProduct)
+      .returning();
+    return product;
+  }
+
+  async updateProduct(id: number, updateProduct: Partial<InsertProduct>): Promise<Product | undefined> {
+    const [product] = await db
+      .update(products)
+      .set(updateProduct)
+      .where(eq(products.id, id))
+      .returning();
+    return product || undefined;
+  }
+
+  async deleteProduct(id: number): Promise<boolean> {
+    const result = await db.delete(products).where(eq(products.id, id));
+    return result.rowCount > 0;
   }
 }
 

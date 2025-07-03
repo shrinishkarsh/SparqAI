@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { openaiService } from "./services/openai";
 import { 
   insertUserSchema, insertCompanySchema, insertCampaignSchema, 
-  insertContactSchema, insertActivitySchema, insertIntegrationSchema
+  insertContactSchema, insertActivitySchema, insertIntegrationSchema, insertProductSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -330,6 +330,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch dashboard stats" });
+    }
+  });
+
+  // Product routes
+  app.get("/api/products/user/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const products = await storage.getProductsByUserId(userId);
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
+  app.get("/api/products/company/:companyId", async (req, res) => {
+    try {
+      const companyId = parseInt(req.params.companyId);
+      const products = await storage.getProductsByCompanyId(companyId);
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
+  app.post("/api/products", async (req, res) => {
+    try {
+      const productData = insertProductSchema.parse(req.body);
+      const product = await storage.createProduct(productData);
+      res.json(product);
+    } catch (error) {
+      res.status(400).json({ message: "Product creation failed" });
+    }
+  });
+
+  app.put("/api/products/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = insertProductSchema.partial().parse(req.body);
+      const product = await storage.updateProduct(id, updates);
+      
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      res.json(product);
+    } catch (error) {
+      res.status(400).json({ message: "Product update failed" });
+    }
+  });
+
+  app.delete("/api/products/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteProduct(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      res.json({ message: "Product deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Product deletion failed" });
     }
   });
 

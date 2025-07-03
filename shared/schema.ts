@@ -24,13 +24,43 @@ export const companies = pgTable("companies", {
   industry: text("industry"),
   size: text("size"),
   targetIcp: text("target_icp"),
+  // Enhanced company setup fields
+  targetMarket: text("target_market"),
+  valueProposition: text("value_proposition"),
+  idealCustomerProfile: text("ideal_customer_profile"),
+  companyGoals: text("company_goals"),
+  salesProcess: text("sales_process"),
+  competitiveAdvantage: text("competitive_advantage"),
+  revenueModel: text("revenue_model"),
+  geographicFocus: text("geographic_focus"),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const products = pgTable("products", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  companyId: integer("company_id").references(() => companies.id),
+  name: text("name").notNull(),
+  description: text("description"),
+  category: text("category"),
+  price: text("price"),
+  features: jsonb("features").default([]),
+  targetAudience: text("target_audience"),
+  useCases: jsonb("use_cases").default([]),
+  benefits: jsonb("benefits").default([]),
+  competitiveAdvantage: text("competitive_advantage"),
+  salesPoints: jsonb("sales_points").default([]),
+  documentationUrl: text("documentation_url"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const campaigns = pgTable("campaigns", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
   companyId: integer("company_id").references(() => companies.id),
+  productId: integer("product_id").references(() => products.id),
   name: text("name").notNull(),
   description: text("description"),
   status: text("status").notNull().default("draft"), // draft, active, paused, completed
@@ -38,6 +68,14 @@ export const campaigns = pgTable("campaigns", {
   messageTemplate: text("message_template"),
   sequences: jsonb("sequences").default([]),
   stats: jsonb("stats").default({}),
+  // Enhanced campaign fields
+  channels: jsonb("channels").default([]), // email, linkedin, both
+  listSource: text("list_source").default("upload"), // upload, ai_generated
+  strategy: text("strategy"), // outreach strategy
+  totalContacts: integer("total_contacts").default(0),
+  sentMessages: integer("sent_messages").default(0),
+  responses: integer("responses").default(0),
+  meetings: integer("meetings").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -118,6 +156,12 @@ export const insertIntegrationSchema = createInsertSchema(integrations).omit({
   updatedAt: true,
 });
 
+export const insertProductSchema = createInsertSchema(products).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -136,3 +180,6 @@ export type InsertActivity = z.infer<typeof insertActivitySchema>;
 
 export type Integration = typeof integrations.$inferSelect;
 export type InsertIntegration = z.infer<typeof insertIntegrationSchema>;
+
+export type Product = typeof products.$inferSelect;
+export type InsertProduct = z.infer<typeof insertProductSchema>;

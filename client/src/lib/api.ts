@@ -140,4 +140,30 @@ export const api = {
     const response = await apiRequest("GET", `/api/dashboard/stats/${userId}`);
     return response.json();
   },
+
+  // Products
+  async getProductsByUserId(userId: number) {
+    const response = await apiRequest("GET", `/api/products/user/${userId}`);
+    return response.json();
+  },
+
+  async getProductsByCompanyId(companyId: number) {
+    const response = await apiRequest("GET", `/api/products/company/${companyId}`);
+    return response.json();
+  },
+
+  async createProduct(productData: any) {
+    const response = await apiRequest("POST", "/api/products", productData);
+    return response.json();
+  },
+
+  async updateProduct(id: number, updates: any) {
+    const response = await apiRequest("PUT", `/api/products/${id}`, updates);
+    return response.json();
+  },
+
+  async deleteProduct(id: number) {
+    const response = await apiRequest("DELETE", `/api/products/${id}`);
+    return response.json();
+  },
 };
