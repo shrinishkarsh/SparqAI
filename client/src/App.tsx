@@ -7,7 +7,7 @@ import Dashboard from "@/pages/Dashboard";
 import Campaigns from "@/pages/Campaigns";
 import Contacts from "@/pages/Contacts";
 import Setup from "@/pages/Setup";
-
+import Analytics from "@/pages/Analytics";
 import Sequences from "@/pages/Sequences";
 import Integrations from "@/pages/Integrations";
 import Settings from "@/pages/Settings";
@@ -26,9 +26,9 @@ function Router() {
           <Route path="/" component={Dashboard} />
           <Route path="/campaigns" component={Campaigns} />
           <Route path="/contacts" component={Contacts} />
-
-          <Route path="/sequences" component={Sequences} />
           <Route path="/integrations" component={Integrations} />
+          <Route path="/analytics" component={Analytics} />
+          <Route path="/sequences" component={Sequences} />
           <Route path="/settings" component={Settings} />
           <Route path="/setup" component={Setup} />
           <Route component={NotFound} />

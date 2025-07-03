@@ -13,21 +13,17 @@ import {
   Settings,
   HelpCircle,
   Zap,
-  ChevronUp
+  ChevronUp,
+  Link as LinkIcon
 } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: ChartLine },
   { name: "Campaigns", href: "/campaigns", icon: Megaphone, badge: "3" },
   { name: "Contacts", href: "/contacts", icon: Users, count: "2,847" },
+  { name: "Integrations", href: "/integrations", icon: LinkIcon },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
-  { name: "Sequences", href: "/sequences", icon: Workflow },
-];
-
-const integrations = [
-  { name: "LinkedIn", icon: Linkedin, connected: true },
-  { name: "Email", icon: Mail, connected: true },
-  { name: "CRM", icon: Database, connected: false, status: "Setup" },
+  { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 export function Sidebar() {
@@ -38,8 +34,25 @@ export function Sidebar() {
       {/* Logo Section */}
       <div className="flex items-center px-6 py-4 border-b border-gray-200">
         <div className="flex items-center">
-          <div className="w-8 h-8 sparq-gradient rounded-lg flex items-center justify-center">
-            <Zap className="h-4 w-4 text-white" />
+          <div className="w-10 h-10 relative">
+            <svg viewBox="0 0 40 40" className="w-full h-full">
+              <defs>
+                <linearGradient id="sparqGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#6366f1" />
+                  <stop offset="100%" stopColor="#8b5cf6" />
+                </linearGradient>
+              </defs>
+              <rect width="40" height="40" rx="8" fill="url(#sparqGradient)" />
+              <path
+                d="M12 28L20 12L28 28M16 22h8"
+                stroke="white"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              />
+              <circle cx="20" cy="15" r="1.5" fill="white" />
+            </svg>
           </div>
           <span className="ml-3 text-xl font-bold text-gray-900">SparqAI</span>
           <span className="ml-2 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
@@ -87,47 +100,9 @@ export function Sidebar() {
           })}
         </div>
 
-        {/* Integration Section */}
-        <div className="mt-8">
-          <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            Integrations
-          </h3>
-          <div className="mt-2 space-y-1">
-            {integrations.map((integration) => (
-              <Link
-                key={integration.name}
-                href="/integrations"
-                className="text-gray-700 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-lg"
-              >
-                <integration.icon
-                  className={cn(
-                    "mr-3 h-4 w-4",
-                    integration.name === "LinkedIn" ? "text-blue-600" : "text-gray-400"
-                  )}
-                />
-                {integration.name}
-                {integration.connected ? (
-                  <span className="ml-auto w-2 h-2 bg-green-400 rounded-full"></span>
-                ) : (
-                  <span className="ml-auto text-xs text-gray-500">
-                    {integration.status}
-                  </span>
-                )}
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Settings Section */}
+        {/* Help Section */}
         <div className="mt-8">
           <div className="space-y-1">
-            <Link
-              href="/settings"
-              className="text-gray-700 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-lg"
-            >
-              <Settings className="text-gray-400 mr-3 h-4 w-4" />
-              Settings
-            </Link>
             <Link
               href="/help"
               className="text-gray-700 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-lg"
