@@ -12,8 +12,7 @@ import Sequences from "@/pages/Sequences";
 import Integrations from "@/pages/Integrations";
 import Settings from "@/pages/Settings";
 import Onboarding from "@/pages/Onboarding";
-import Login from "@/pages/Login";
-import Register from "@/pages/Register";
+import Landing from "@/pages/Landing";
 import Help from "@/pages/Help";
 import { Templates } from "@/pages/Templates";
 import { LeadScoring } from "@/pages/LeadScoring";
@@ -35,19 +34,18 @@ function Router() {
     );
   }
   
-  // Show login/register pages if not authenticated
+  // Redirect to Replit Auth if not authenticated
   if (!isAuthenticated) {
+    window.location.href = "/api/login";
     return (
-      <Switch>
-        <Route path="/register" component={Register} />
-        <Route path="/login" component={Login} />
-        <Route component={Login} />
-      </Switch>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
     );
   }
   
   // Show onboarding if user hasn't completed setup
-  if (!user?.isSetupComplete) {
+  if (user && !user.isSetupComplete) {
     return <Onboarding />;
   }
   

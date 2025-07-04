@@ -1,7 +1,7 @@
 import { 
   users, companies, campaigns, contacts, activities, integrations, products,
   smartleadCampaigns, smartleadLeads, smartleadStats,
-  type User, type InsertUser, type Company, type InsertCompany,
+  type User, type InsertUser, type UpsertUser, type Company, type InsertCompany,
   type Campaign, type InsertCampaign, type Contact, type InsertContact,
   type Activity, type InsertActivity, type Integration, type InsertIntegration,
   type Product, type InsertProduct, type SmartleadCampaign, type InsertSmartleadCampaign,
@@ -12,27 +12,28 @@ import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
-  getUser(id: number): Promise<User | undefined>;
+  getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined>;
+  updateUser(id: string, user: Partial<InsertUser>): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
 
   // Company operations
   getCompany(id: number): Promise<Company | undefined>;
-  getCompanyByUserId(userId: number): Promise<Company | undefined>;
+  getCompanyByUserId(userId: string): Promise<Company | undefined>;
   createCompany(company: InsertCompany): Promise<Company>;
   updateCompany(id: number, company: Partial<InsertCompany>): Promise<Company | undefined>;
 
   // Campaign operations
   getCampaign(id: number): Promise<Campaign | undefined>;
-  getCampaignsByUserId(userId: number): Promise<Campaign[]>;
+  getCampaignsByUserId(userId: string): Promise<Campaign[]>;
   createCampaign(campaign: InsertCampaign): Promise<Campaign>;
   updateCampaign(id: number, campaign: Partial<InsertCampaign>): Promise<Campaign | undefined>;
   deleteCampaign(id: number): Promise<boolean>;
 
   // Contact operations
   getContact(id: number): Promise<Contact | undefined>;
-  getContactsByUserId(userId: number): Promise<Contact[]>;
+  getContactsByUserId(userId: string): Promise<Contact[]>;
   getContactsByCampaignId(campaignId: number): Promise<Contact[]>;
   createContact(contact: InsertContact): Promise<Contact>;
   updateContact(id: number, contact: Partial<InsertContact>): Promise<Contact | undefined>;
@@ -40,19 +41,19 @@ export interface IStorage {
 
   // Activity operations
   getActivity(id: number): Promise<Activity | undefined>;
-  getActivitiesByUserId(userId: number): Promise<Activity[]>;
+  getActivitiesByUserId(userId: string): Promise<Activity[]>;
   createActivity(activity: InsertActivity): Promise<Activity>;
 
   // Integration operations
   getIntegration(id: number): Promise<Integration | undefined>;
-  getIntegrationsByUserId(userId: number): Promise<Integration[]>;
-  getIntegrationByType(userId: number, type: string): Promise<Integration | undefined>;
+  getIntegrationsByUserId(userId: string): Promise<Integration[]>;
+  getIntegrationByType(userId: string, type: string): Promise<Integration | undefined>;
   createIntegration(integration: InsertIntegration): Promise<Integration>;
   updateIntegration(id: number, integration: Partial<InsertIntegration>): Promise<Integration | undefined>;
 
   // Product operations
   getProduct(id: number): Promise<Product | undefined>;
-  getProductsByUserId(userId: number): Promise<Product[]>;
+  getProductsByUserId(userId: string): Promise<Product[]>;
   getProductsByCompanyId(companyId: number): Promise<Product[]>;
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined>;
@@ -60,20 +61,20 @@ export interface IStorage {
 
   // Smartlead Campaign operations
   getSmartleadCampaign(id: number): Promise<SmartleadCampaign | undefined>;
-  getSmartleadCampaignsByUserId(userId: number): Promise<SmartleadCampaign[]>;
+  getSmartleadCampaignsByUserId(userId: string): Promise<SmartleadCampaign[]>;
   createSmartleadCampaign(campaign: InsertSmartleadCampaign): Promise<SmartleadCampaign>;
   updateSmartleadCampaign(id: number, campaign: Partial<InsertSmartleadCampaign>): Promise<SmartleadCampaign | undefined>;
 
   // Smartlead Lead operations
   getSmartleadLead(id: number): Promise<SmartleadLead | undefined>;
-  getSmartleadLeadsByUserId(userId: number): Promise<SmartleadLead[]>;
+  getSmartleadLeadsByUserId(userId: string): Promise<SmartleadLead[]>;
   getSmartleadLeadsByCampaignId(campaignId: number): Promise<SmartleadLead[]>;
   createSmartleadLead(lead: InsertSmartleadLead): Promise<SmartleadLead>;
   updateSmartleadLead(id: number, lead: Partial<InsertSmartleadLead>): Promise<SmartleadLead | undefined>;
 
   // Smartlead Stats operations
   getSmartleadStat(id: number): Promise<SmartleadStat | undefined>;
-  getSmartleadStatsByUserId(userId: number): Promise<SmartleadStat[]>;
+  getSmartleadStatsByUserId(userId: string): Promise<SmartleadStat[]>;
   getSmartleadStatsByCampaignId(campaignId: number): Promise<SmartleadStat[]>;
   createSmartleadStat(stat: InsertSmartleadStat): Promise<SmartleadStat>;
 }
@@ -597,7 +598,7 @@ export class MemStorage implements IStorage {
 
 // Database Storage Implementation
 export class DatabaseStorage implements IStorage {
-  async getUser(id: number): Promise<User | undefined> {
+  async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
@@ -615,13 +616,28 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async updateUser(id: number, updateUser: Partial<InsertUser>): Promise<User | undefined> {
+  async updateUser(id: string, updateUser: Partial<InsertUser>): Promise<User | undefined> {
     const [user] = await db
       .update(users)
       .set(updateUser)
       .where(eq(users.id, id))
       .returning();
     return user || undefined;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
   }
 
   async getCompany(id: number): Promise<Company | undefined> {

@@ -38,7 +38,7 @@ const navigation = [
 
 export function Sidebar() {
   const [location] = useLocation();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   return (
     <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg border-r border-gray-200">
@@ -143,7 +143,7 @@ export function Sidebar() {
         <div className="flex items-center">
           <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
             <span className="text-sm font-medium text-gray-700">
-              {user?.firstName?.charAt(0) || user?.username?.charAt(0) || 'U'}
+              {user?.firstName?.charAt(0) || 'U'}
               {user?.lastName?.charAt(0) || ''}
             </span>
           </div>
@@ -151,7 +151,7 @@ export function Sidebar() {
             <p className="text-sm font-medium text-gray-900 truncate">
               {user?.firstName && user?.lastName 
                 ? `${user.firstName} ${user.lastName}` 
-                : user?.username || 'User'
+                : 'User'
               }
             </p>
             <p className="text-xs text-gray-500 truncate">{user?.email}</p>
@@ -159,7 +159,7 @@ export function Sidebar() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => logout()}
+            onClick={() => window.location.href = '/api/logout'}
             className="flex-shrink-0 text-gray-400 hover:text-gray-600 p-1"
           >
             <LogOut className="h-4 w-4" />

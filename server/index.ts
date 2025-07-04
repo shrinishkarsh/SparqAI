@@ -38,6 +38,12 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Add a simple test route before anything else
+  app.get('/api/test', (req, res) => {
+    console.log('Test route hit successfully!');
+    res.json({ message: 'API is working!', timestamp: new Date().toISOString() });
+  });
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
