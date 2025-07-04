@@ -14,18 +14,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup Replit Auth
   await setupAuth(app);
 
-  // Health check route (no auth required) - using Router to ensure priority
-  const apiRouter = express.Router();
-  apiRouter.get('/health', (req, res) => {
+  // Priority middleware for API routes - must run before Vite catch-all
+  app.use('/api', (req, res, next) => {
+    // Mark this as an API route to prevent HTML fallback
+    res.locals.isApiRoute = true;
+    next();
+  });
+
+  // Health check route (no auth required)
+  app.get('/api/health', (req, res) => {
     console.log('Health check route hit');
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
-  
-  // Mount API router
-  app.use('/api', apiRouter);
 
-  // Auth routes on API router
-  apiRouter.get('/auth/user', isAuthenticated, async (req: any, res) => {
+  // Auth routes - using direct app routing for priority
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
