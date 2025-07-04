@@ -4,10 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Linkedin, Mail, Database, CheckCircle, AlertCircle, Link as LinkIcon, Zap } from "lucide-react";
+import { Linkedin, Mail, Database, CheckCircle, AlertCircle, Link as LinkIcon } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { SmartleadIntegration } from "@/components/integrations/SmartleadIntegration";
 
 const currentUser = { id: 1, email: "alex@company.com", firstName: "Alex", lastName: "Johnson" };
 
@@ -104,21 +103,6 @@ export default function Integrations() {
           </div>
         ) : (
           <div className="grid gap-6">
-            {/* Smartlead Integration - Featured */}
-            <div className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 rounded-lg bg-blue-100 text-blue-600">
-                  <Zap className="h-6 w-6" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">Smartlead Integration</h2>
-                  <p className="text-gray-600">Connect your Smartlead account to sync campaigns and analytics</p>
-                </div>
-                <Badge className="ml-auto bg-blue-100 text-blue-700">Featured</Badge>
-              </div>
-              <SmartleadIntegration />
-            </div>
-
             {INTEGRATION_TYPES.map((integrationType) => {
               const Icon = integrationType.icon;
               const existingIntegration = getIntegrationByType(integrationType.id);
