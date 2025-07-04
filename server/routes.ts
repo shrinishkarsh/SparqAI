@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { openaiService } from "./services/openai";
+import { getSmartleadService, initializeSmartleadService } from "./services/smartlead";
 import { 
   insertUserSchema, insertCompanySchema, insertCampaignSchema, 
   insertContactSchema, insertActivitySchema, insertIntegrationSchema, insertProductSchema
@@ -387,6 +388,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = parseInt(req.params.userId);
       
+      // Try to get real Smartlead data first
+      const smartlead = getSmartleadService();
+      if (smartlead) {
+        try {
+          const smartleadAnalytics = await smartlead.getAllCampaignsAnalytics();
+          const smartleadCampaigns = await storage.getSmartleadCampaignsByUserId(userId);
+          
+          // Return real Smartlead data
+          const stats = {
+            totalLeads: smartleadAnalytics.totalLeads,
+            activeCampaigns: smartleadAnalytics.activeCampaigns,
+            responseRate: smartleadAnalytics.avgReplyRate.toFixed(1),
+            meetingsBooked: Math.floor(smartleadAnalytics.totalReplies * 0.15), // Estimate meetings from replies
+            openRate: smartleadAnalytics.avgOpenRate.toFixed(1),
+            clickRate: smartleadAnalytics.avgClickRate.toFixed(1),
+            totalSent: smartleadAnalytics.totalSent,
+            totalOpens: smartleadAnalytics.totalOpens,
+            totalClicks: smartleadAnalytics.totalClicks,
+            totalReplies: smartleadAnalytics.totalReplies,
+            hotLeads: Math.floor(smartleadAnalytics.totalReplies * 0.3), // Hot leads from replies
+            warmLeads: Math.floor(smartleadAnalytics.totalOpens * 0.2), // Warm from opens
+            coldLeads: smartleadAnalytics.totalLeads - Math.floor(smartleadAnalytics.totalOpens * 0.2) - Math.floor(smartleadAnalytics.totalReplies * 0.3),
+            connections: smartleadAnalytics.totalReplies,
+            isSmartleadData: true
+          };
+          
+          return res.json(stats);
+        } catch (smartleadError) {
+          console.log('Smartlead data unavailable, falling back to local data:', smartleadError.message);
+        }
+      }
+      
+      // Fallback to local data
       const campaigns = await storage.getCampaignsByUserId(userId);
       const contacts = await storage.getContactsByUserId(userId);
       const activities = await storage.getActivitiesByUserId(userId);
@@ -401,6 +435,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         warmLeads: contacts.filter(c => c.status === 'warm').length,
         coldLeads: contacts.filter(c => c.status === 'cold').length,
         connections: contacts.filter(c => c.status === 'connected').length,
+        openRate: "12.5", // Demo data
+        clickRate: "3.2", // Demo data
+        totalSent: 125,
+        totalOpens: 18,
+        totalClicks: 4,
+        totalReplies: contacts.filter(c => c.responseReceived).length,
+        isSmartleadData: false
       };
       
       res.json(stats);
@@ -468,6 +509,215 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Product deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Product deletion failed" });
+    }
+  });
+
+  // Smartlead Integration Routes
+  
+  // Initialize Smartlead API key
+  app.post("/api/smartlead/init", requireAuth, async (req, res) => {
+    try {
+      const { apiKey } = req.body;
+      if (!apiKey) {
+        return res.status(400).json({ message: "API key is required" });
+      }
+      
+      initializeSmartleadService(apiKey);
+      
+      // Store the API key in integrations table
+      const integration = await storage.createIntegration({
+        userId: req.session.userId,
+        type: "smartlead",
+        isConnected: true,
+        credentials: { apiKey },
+        settings: {}
+      });
+      
+      res.json({ message: "Smartlead API initialized successfully", integration });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to initialize Smartlead API" });
+    }
+  });
+
+  // Sync campaigns from Smartlead
+  app.post("/api/smartlead/sync-campaigns", requireAuth, async (req, res) => {
+    try {
+      const smartlead = getSmartleadService();
+      if (!smartlead) {
+        return res.status(400).json({ message: "Smartlead API not initialized" });
+      }
+      
+      const campaigns = await smartlead.getAllCampaigns();
+      const syncedCampaigns = [];
+      
+      for (const campaign of campaigns) {
+        try {
+          // Save to database
+          await storage.createSmartleadCampaign({
+            smartleadId: campaign.id,
+            userId: req.session.userId,
+            name: campaign.name,
+            status: campaign.status,
+            smartleadUserId: campaign.user_id,
+            trackSettings: campaign.track_settings,
+            schedulerCronValue: campaign.scheduler_cron_value,
+            minTimeBetweenEmails: campaign.min_time_btwn_emails,
+            maxLeadsPerDay: campaign.max_leads_per_day,
+            stopLeadSettings: campaign.stop_lead_settings,
+            unsubscribeText: campaign.unsubscribe_text,
+            clientId: campaign.client_id,
+            enableAiEspMatching: campaign.enable_ai_esp_matching,
+            sendAsPlainText: campaign.send_as_plain_text,
+            followUpPercentage: campaign.follow_up_percentage
+          });
+          syncedCampaigns.push(campaign);
+        } catch (error) {
+          // Skip if already exists
+          if (error.code === '23505') {
+            syncedCampaigns.push(campaign);
+          }
+        }
+      }
+      
+      res.json({ message: "Campaigns synced successfully", count: syncedCampaigns.length, campaigns: syncedCampaigns });
+    } catch (error) {
+      console.error('Sync campaigns error:', error);
+      res.status(500).json({ message: "Failed to sync campaigns" });
+    }
+  });
+
+  // Sync leads from a specific campaign
+  app.post("/api/smartlead/sync-leads/:campaignId", requireAuth, async (req, res) => {
+    try {
+      const smartlead = getSmartleadService();
+      if (!smartlead) {
+        return res.status(400).json({ message: "Smartlead API not initialized" });
+      }
+      
+      const campaignId = parseInt(req.params.campaignId);
+      const leadsData = await smartlead.getCampaignLeads(campaignId, 0, 1000);
+      const syncedLeads = [];
+      
+      for (const leadData of leadsData.data) {
+        try {
+          await storage.createSmartleadLead({
+            smartleadId: leadData.lead.id,
+            userId: req.session.userId,
+            campaignId: null, // Will be linked later
+            campaignLeadMapId: leadData.campaign_lead_map_id,
+            firstName: leadData.lead.first_name,
+            lastName: leadData.lead.last_name,
+            email: leadData.lead.email,
+            phoneNumber: leadData.lead.phone_number,
+            companyName: leadData.lead.company_name,
+            website: leadData.lead.website,
+            location: leadData.lead.location,
+            customFields: leadData.lead.custom_fields,
+            linkedinProfile: leadData.lead.linkedin_profile,
+            companyUrl: leadData.lead.company_url,
+            isUnsubscribed: leadData.lead.is_unsubscribed,
+            status: leadData.status
+          });
+          syncedLeads.push(leadData);
+        } catch (error) {
+          // Skip if already exists
+          if (error.code === '23505') {
+            syncedLeads.push(leadData);
+          }
+        }
+      }
+      
+      res.json({ message: "Leads synced successfully", count: syncedLeads.length, leads: syncedLeads });
+    } catch (error) {
+      console.error('Sync leads error:', error);
+      res.status(500).json({ message: "Failed to sync leads" });
+    }
+  });
+
+  // Get real-time analytics from Smartlead
+  app.get("/api/smartlead/analytics", requireAuth, async (req, res) => {
+    try {
+      const smartlead = getSmartleadService();
+      if (!smartlead) {
+        return res.status(400).json({ message: "Smartlead API not initialized" });
+      }
+      
+      const analytics = await smartlead.getAllCampaignsAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error('Analytics error:', error);
+      res.status(500).json({ message: "Failed to fetch analytics" });
+    }
+  });
+
+  // Get campaign analytics
+  app.get("/api/smartlead/campaign/:campaignId/analytics", requireAuth, async (req, res) => {
+    try {
+      const smartlead = getSmartleadService();
+      if (!smartlead) {
+        return res.status(400).json({ message: "Smartlead API not initialized" });
+      }
+      
+      const campaignId = parseInt(req.params.campaignId);
+      const analytics = await smartlead.getCampaignAnalytics(campaignId);
+      res.json(analytics);
+    } catch (error) {
+      console.error('Campaign analytics error:', error);
+      res.status(500).json({ message: "Failed to fetch campaign analytics" });
+    }
+  });
+
+  // Get Smartlead campaigns
+  app.get("/api/smartlead/campaigns", requireAuth, async (req, res) => {
+    try {
+      const smartlead = getSmartleadService();
+      if (!smartlead) {
+        return res.status(400).json({ message: "Smartlead API not initialized" });
+      }
+      
+      const campaigns = await smartlead.getAllCampaigns();
+      res.json(campaigns);
+    } catch (error) {
+      console.error('Get campaigns error:', error);
+      res.status(500).json({ message: "Failed to fetch campaigns" });
+    }
+  });
+
+  // Get campaign leads
+  app.get("/api/smartlead/campaign/:campaignId/leads", requireAuth, async (req, res) => {
+    try {
+      const smartlead = getSmartleadService();
+      if (!smartlead) {
+        return res.status(400).json({ message: "Smartlead API not initialized" });
+      }
+      
+      const campaignId = parseInt(req.params.campaignId);
+      const offset = parseInt(req.query.offset as string) || 0;
+      const limit = parseInt(req.query.limit as string) || 100;
+      
+      const leads = await smartlead.getCampaignLeads(campaignId, offset, limit);
+      res.json(leads);
+    } catch (error) {
+      console.error('Get leads error:', error);
+      res.status(500).json({ message: "Failed to fetch leads" });
+    }
+  });
+
+  // Check Smartlead connection status
+  app.get("/api/smartlead/status", requireAuth, async (req, res) => {
+    try {
+      const smartlead = getSmartleadService();
+      const isConnected = !!smartlead;
+      
+      if (isConnected) {
+        // Test the connection by trying to fetch campaigns
+        await smartlead.getAllCampaigns();
+        res.json({ connected: true, message: "Smartlead API is connected and working" });
+      } else {
+        res.json({ connected: false, message: "Smartlead API not initialized" });
+      }
+    } catch (error) {
+      res.json({ connected: false, message: "Smartlead API connection failed", error: error.message });
     }
   });
 

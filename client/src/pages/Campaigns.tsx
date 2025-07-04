@@ -15,6 +15,18 @@ export default function Campaigns() {
     queryFn: () => api.getCampaignsByUserId(1),
   });
 
+  // Fetch real Smartlead campaigns
+  const { data: smartleadCampaigns, isLoading: smartleadLoading } = useQuery({
+    queryKey: ["/api/smartlead/campaigns"],
+    queryFn: async () => {
+      const response = await fetch("/api/smartlead/campaigns");
+      if (!response.ok) throw new Error("Failed to fetch Smartlead campaigns");
+      return await response.json();
+    },
+    retry: false,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -131,6 +143,54 @@ export default function Campaigns() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Smartlead Campaigns Section */}
+        {smartleadCampaigns && smartleadCampaigns.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="text-lg">Smartlead Campaigns</CardTitle>
+                  <p className="text-sm text-gray-600">Live campaigns from your Smartlead account</p>
+                </div>
+                <Badge className="bg-blue-100 text-blue-700">Live Data</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {smartleadCampaigns.slice(0, 5).map((campaign: any) => (
+                  <div key={campaign.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <Play className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-gray-900">{campaign.name}</h3>
+                        <p className="text-sm text-gray-600">
+                          ID: {campaign.id} • Created: {new Date(campaign.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <Badge 
+                        className={
+                          campaign.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
+                          campaign.status === 'PAUSED' ? 'bg-orange-100 text-orange-800' :
+                          'bg-gray-100 text-gray-800'
+                        }
+                      >
+                        {campaign.status}
+                      </Badge>
+                      <Button variant="outline" size="sm">
+                        View Details
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Campaigns Table */}
         <Card>

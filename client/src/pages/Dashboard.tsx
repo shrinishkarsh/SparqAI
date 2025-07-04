@@ -52,23 +52,23 @@ export default function Dashboard() {
           <MetricsCard
             title="Total Leads Generated"
             value={stats?.totalLeads?.toLocaleString() || "0"}
-            change="+18.2% from last month"
-            changeType="positive"
+            change={stats?.isSmartleadData ? "Live from Smartlead" : "+18.2% from last month"}
+            changeType={stats?.isSmartleadData ? "neutral" : "positive"}
             icon={Users}
             iconColor="bg-blue-100 text-blue-600"
           />
           <MetricsCard
             title="Response Rate"
             value={`${stats?.responseRate || 0}%`}
-            change="+3.1% from last week"
-            changeType="positive"
+            change={stats?.isSmartleadData ? "Live from Smartlead" : "+3.1% from last week"}
+            changeType={stats?.isSmartleadData ? "neutral" : "positive"}
             icon={MessageSquare}
             iconColor="bg-green-100 text-green-600"
           />
           <MetricsCard
             title="Active Campaigns"
             value={stats?.activeCampaigns || 0}
-            change="3 launching today"
+            change={stats?.isSmartleadData ? "Live from Smartlead" : "3 launching today"}
             changeType="neutral"
             icon={Target}
             iconColor="bg-blue-100 text-blue-600"
@@ -76,12 +76,50 @@ export default function Dashboard() {
           <MetricsCard
             title="Meetings Booked"
             value={stats?.meetingsBooked || 0}
-            change="12 this week"
+            change={stats?.isSmartleadData ? "Live from Smartlead" : "12 this week"}
             changeType="neutral"
             icon={Calendar}
             iconColor="bg-purple-100 text-purple-600"
           />
         </div>
+
+        {/* Additional Smartlead Metrics */}
+        {stats?.isSmartleadData && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <MetricsCard
+              title="Open Rate"
+              value={`${stats?.openRate || 0}%`}
+              change="From all campaigns"
+              changeType="neutral"
+              icon={MessageSquare}
+              iconColor="bg-orange-100 text-orange-600"
+            />
+            <MetricsCard
+              title="Click Rate"
+              value={`${stats?.clickRate || 0}%`}
+              change="From all campaigns"
+              changeType="neutral"
+              icon={MessageSquare}
+              iconColor="bg-purple-100 text-purple-600"
+            />
+            <MetricsCard
+              title="Total Sent"
+              value={stats?.totalSent?.toLocaleString() || "0"}
+              change="All campaigns"
+              changeType="neutral"
+              icon={Target}
+              iconColor="bg-green-100 text-green-600"
+            />
+            <MetricsCard
+              title="Total Replies"
+              value={stats?.totalReplies?.toLocaleString() || "0"}
+              change="All campaigns"
+              changeType="neutral"
+              icon={MessageSquare}
+              iconColor="bg-blue-100 text-blue-600"
+            />
+          </div>
+        )}
 
         {/* Main Dashboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

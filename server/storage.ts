@@ -1,9 +1,11 @@
 import { 
   users, companies, campaigns, contacts, activities, integrations, products,
+  smartleadCampaigns, smartleadLeads, smartleadStats,
   type User, type InsertUser, type Company, type InsertCompany,
   type Campaign, type InsertCampaign, type Contact, type InsertContact,
   type Activity, type InsertActivity, type Integration, type InsertIntegration,
-  type Product, type InsertProduct
+  type Product, type InsertProduct, type SmartleadCampaign, type InsertSmartleadCampaign,
+  type SmartleadLead, type InsertSmartleadLead, type SmartleadStat, type InsertSmartleadStat
 } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
@@ -55,6 +57,25 @@ export interface IStorage {
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined>;
   deleteProduct(id: number): Promise<boolean>;
+
+  // Smartlead Campaign operations
+  getSmartleadCampaign(id: number): Promise<SmartleadCampaign | undefined>;
+  getSmartleadCampaignsByUserId(userId: number): Promise<SmartleadCampaign[]>;
+  createSmartleadCampaign(campaign: InsertSmartleadCampaign): Promise<SmartleadCampaign>;
+  updateSmartleadCampaign(id: number, campaign: Partial<InsertSmartleadCampaign>): Promise<SmartleadCampaign | undefined>;
+
+  // Smartlead Lead operations
+  getSmartleadLead(id: number): Promise<SmartleadLead | undefined>;
+  getSmartleadLeadsByUserId(userId: number): Promise<SmartleadLead[]>;
+  getSmartleadLeadsByCampaignId(campaignId: number): Promise<SmartleadLead[]>;
+  createSmartleadLead(lead: InsertSmartleadLead): Promise<SmartleadLead>;
+  updateSmartleadLead(id: number, lead: Partial<InsertSmartleadLead>): Promise<SmartleadLead | undefined>;
+
+  // Smartlead Stats operations
+  getSmartleadStat(id: number): Promise<SmartleadStat | undefined>;
+  getSmartleadStatsByUserId(userId: number): Promise<SmartleadStat[]>;
+  getSmartleadStatsByCampaignId(campaignId: number): Promise<SmartleadStat[]>;
+  createSmartleadStat(stat: InsertSmartleadStat): Promise<SmartleadStat>;
 }
 
 export class MemStorage implements IStorage {
@@ -789,6 +810,110 @@ export class DatabaseStorage implements IStorage {
   async deleteProduct(id: number): Promise<boolean> {
     const result = await db.delete(products).where(eq(products.id, id));
     return result.rowCount > 0;
+  }
+
+  // Smartlead Campaign operations
+  async getSmartleadCampaign(id: number): Promise<SmartleadCampaign | undefined> {
+    const [campaign] = await db
+      .select()
+      .from(smartleadCampaigns)
+      .where(eq(smartleadCampaigns.id, id));
+    return campaign || undefined;
+  }
+
+  async getSmartleadCampaignsByUserId(userId: number): Promise<SmartleadCampaign[]> {
+    return await db
+      .select()
+      .from(smartleadCampaigns)
+      .where(eq(smartleadCampaigns.userId, userId));
+  }
+
+  async createSmartleadCampaign(insertCampaign: InsertSmartleadCampaign): Promise<SmartleadCampaign> {
+    const [campaign] = await db
+      .insert(smartleadCampaigns)
+      .values(insertCampaign)
+      .returning();
+    return campaign;
+  }
+
+  async updateSmartleadCampaign(id: number, updateCampaign: Partial<InsertSmartleadCampaign>): Promise<SmartleadCampaign | undefined> {
+    const [campaign] = await db
+      .update(smartleadCampaigns)
+      .set(updateCampaign)
+      .where(eq(smartleadCampaigns.id, id))
+      .returning();
+    return campaign || undefined;
+  }
+
+  // Smartlead Lead operations
+  async getSmartleadLead(id: number): Promise<SmartleadLead | undefined> {
+    const [lead] = await db
+      .select()
+      .from(smartleadLeads)
+      .where(eq(smartleadLeads.id, id));
+    return lead || undefined;
+  }
+
+  async getSmartleadLeadsByUserId(userId: number): Promise<SmartleadLead[]> {
+    return await db
+      .select()
+      .from(smartleadLeads)
+      .where(eq(smartleadLeads.userId, userId));
+  }
+
+  async getSmartleadLeadsByCampaignId(campaignId: number): Promise<SmartleadLead[]> {
+    return await db
+      .select()
+      .from(smartleadLeads)
+      .where(eq(smartleadLeads.campaignId, campaignId));
+  }
+
+  async createSmartleadLead(insertLead: InsertSmartleadLead): Promise<SmartleadLead> {
+    const [lead] = await db
+      .insert(smartleadLeads)
+      .values(insertLead)
+      .returning();
+    return lead;
+  }
+
+  async updateSmartleadLead(id: number, updateLead: Partial<InsertSmartleadLead>): Promise<SmartleadLead | undefined> {
+    const [lead] = await db
+      .update(smartleadLeads)
+      .set(updateLead)
+      .where(eq(smartleadLeads.id, id))
+      .returning();
+    return lead || undefined;
+  }
+
+  // Smartlead Stats operations
+  async getSmartleadStat(id: number): Promise<SmartleadStat | undefined> {
+    const [stat] = await db
+      .select()
+      .from(smartleadStats)
+      .where(eq(smartleadStats.id, id));
+    return stat || undefined;
+  }
+
+  async getSmartleadStatsByUserId(userId: number): Promise<SmartleadStat[]> {
+    return await db
+      .select()
+      .from(smartleadStats)
+      .where(eq(smartleadStats.userId, userId));
+  }
+
+  async getSmartleadStatsByCampaignId(campaignId: number): Promise<SmartleadStat[]> {
+    return await db
+      .select()
+      .from(smartleadStats)
+      .where(eq(smartleadStats.campaignId, campaignId));
+  }
+
+  async createSmartleadStat(insertStat: InsertSmartleadStat): Promise<SmartleadStat> {
+    const [stat] = await db
+      .insert(smartleadStats)
+      .values(insertStat)
+      .returning();
+    return stat;
   }
 }
 

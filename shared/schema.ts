@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -123,6 +123,74 @@ export const integrations = pgTable("integrations", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const smartleadCampaigns = pgTable("smartlead_campaigns", {
+  id: serial("id").primaryKey(),
+  smartleadId: integer("smartlead_id").unique().notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  name: text("name").notNull(),
+  status: text("status").notNull(),
+  smartleadUserId: integer("smartlead_user_id"),
+  trackSettings: text("track_settings"),
+  schedulerCronValue: text("scheduler_cron_value"),
+  minTimeBetweenEmails: integer("min_time_between_emails"),
+  maxLeadsPerDay: integer("max_leads_per_day"),
+  stopLeadSettings: text("stop_lead_settings"),
+  unsubscribeText: text("unsubscribe_text"),
+  clientId: integer("client_id"),
+  enableAiEspMatching: boolean("enable_ai_esp_matching").default(false),
+  sendAsPlainText: boolean("send_as_plain_text").default(false),
+  followUpPercentage: integer("follow_up_percentage"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const smartleadLeads = pgTable("smartlead_leads", {
+  id: serial("id").primaryKey(),
+  smartleadId: integer("smartlead_id").unique().notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  campaignId: integer("campaign_id").references(() => smartleadCampaigns.id),
+  campaignLeadMapId: integer("campaign_lead_map_id"),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  email: text("email").notNull(),
+  phoneNumber: text("phone_number"),
+  companyName: text("company_name"),
+  website: text("website"),
+  location: text("location"),
+  customFields: jsonb("custom_fields").default({}),
+  linkedinProfile: text("linkedin_profile"),
+  companyUrl: text("company_url"),
+  isUnsubscribed: boolean("is_unsubscribed").default(false),
+  status: text("status").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const smartleadStats = pgTable("smartlead_stats", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  campaignId: integer("campaign_id").references(() => smartleadCampaigns.id).notNull(),
+  leadId: integer("lead_id").references(() => smartleadLeads.id).notNull(),
+  leadEmail: text("lead_email").notNull(),
+  sequenceNumber: integer("sequence_number"),
+  emailSubject: text("email_subject"),
+  emailMessage: text("email_message"),
+  sentTime: timestamp("sent_time"),
+  openTime: timestamp("open_time"),
+  clickTime: timestamp("click_time"),
+  replyTime: timestamp("reply_time"),
+  unsubscribedTime: timestamp("unsubscribed_time"),
+  bouncedTime: timestamp("bounced_time"),
+  leadStatus: text("lead_status"),
+  openCount: integer("open_count").default(0),
+  clickCount: integer("click_count").default(0),
+  replyCount: integer("reply_count").default(0),
+  unsubscribeCount: integer("unsubscribe_count").default(0),
+  bounceCount: integer("bounce_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -162,6 +230,24 @@ export const insertProductSchema = createInsertSchema(products).omit({
   updatedAt: true,
 });
 
+export const insertSmartleadCampaignSchema = createInsertSchema(smartleadCampaigns).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSmartleadLeadSchema = createInsertSchema(smartleadLeads).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSmartleadStatSchema = createInsertSchema(smartleadStats).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -183,3 +269,12 @@ export type InsertIntegration = z.infer<typeof insertIntegrationSchema>;
 
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
+
+export type SmartleadCampaign = typeof smartleadCampaigns.$inferSelect;
+export type InsertSmartleadCampaign = z.infer<typeof insertSmartleadCampaignSchema>;
+
+export type SmartleadLead = typeof smartleadLeads.$inferSelect;
+export type InsertSmartleadLead = z.infer<typeof insertSmartleadLeadSchema>;
+
+export type SmartleadStat = typeof smartleadStats.$inferSelect;
+export type InsertSmartleadStat = z.infer<typeof insertSmartleadStatSchema>;
