@@ -69,6 +69,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Setup completion endpoint
+  app.post("/api/users/:id/setup", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.params.id;
+      const currentUserId = req.user.claims.sub;
+      
+      // Only allow users to update their own setup status
+      if (userId !== currentUserId) {
+        return res.status(403).json({ message: "Forbidden: Can only update own setup status" });
+      }
+      
+      const user = await storage.updateUser(userId, { isSetupComplete: true });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      console.error("Error completing setup:", error);
+      res.status(500).json({ message: "Failed to complete setup" });
+    }
+  });
+
   // Company routes
   app.get("/api/users/:userId/company", isAuthenticated, async (req, res) => {
     try {

@@ -12,6 +12,8 @@ import { CheckCircle, ArrowRight, ArrowLeft } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
+import { apiRequest } from "@/lib/queryClient";
 
 const SETUP_STEPS = [
   {
@@ -40,32 +42,40 @@ export default function Setup() {
   });
 
   const { toast } = useToast();
-
-  const { data: user } = useQuery({
-    queryKey: ["/api/user/1"],
-    queryFn: () => api.getUser(1),
-  });
+  const { user } = useAuth();
 
   const { data: company } = useQuery({
-    queryKey: ["/api/company/user/1"],
-    queryFn: () => api.getCompanyByUserId(1),
+    queryKey: ["/api/companies/user", user?.id],
+    queryFn: () => apiRequest(`/api/companies/user/${user?.id}`),
+    enabled: !!user?.id,
   });
 
   const { data: integrations } = useQuery({
-    queryKey: ["/api/integrations/user/1"],
-    queryFn: () => api.getIntegrationsByUserId(1),
+    queryKey: ["/api/integrations/user", user?.id],
+    queryFn: () => apiRequest(`/api/integrations/user/${user?.id}`),
+    enabled: !!user?.id,
   });
 
   const completeSetupMutation = useMutation({
     mutationFn: async () => {
-      await api.updateUser(1, { isSetupComplete: true });
+      await apiRequest(`/api/users/${user?.id}/setup`, {
+        method: "POST",
+        body: { isSetupComplete: true },
+      });
     },
     onSuccess: () => {
       toast({
         title: "Setup Complete!",
         description: "Your SparqAI account is now ready to generate leads.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/user/1"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Setup failed. Please try again.",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 

@@ -146,12 +146,12 @@ export default function Onboarding() {
       }
       
       // Create company
-      const company = await fetch('/api/company', {
+      const companyResponse = await fetch('/api/companies', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.companyName,
-          userId: user.id,
+          userId: parseInt(user.id), // Convert string ID to number for company table
           size: formData.companySize,
           industry: formData.industry,
           website: formData.website,
@@ -163,21 +163,31 @@ export default function Onboarding() {
           geographicFocus: formData.geographicFocus,
           targetIcp: formData.idealCustomerProfile,
         }),
-      }).then(res => res.json());
+      });
+
+      if (!companyResponse.ok) {
+        throw new Error('Failed to create company');
+      }
+
+      const company = await companyResponse.json();
 
       // Update user as setup complete
-      await fetch(`/api/user/${user.id}`, {
-        method: 'PATCH',
+      const userResponse = await fetch(`/api/users/${user.id}/setup`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isSetupComplete: true }),
-      }).then(res => res.json());
+      });
+
+      if (!userResponse.ok) {
+        throw new Error('Failed to complete setup');
+      }
 
       return company;
     },
     onSuccess: () => {
       toast({ title: "Welcome to SparqAI! Your account is now set up." });
       queryClient.invalidateQueries({ queryKey: ['/api/companies'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
       // Redirect to dashboard
       setLocation("/");
     },
