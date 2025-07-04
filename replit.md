@@ -52,6 +52,12 @@ The application uses a relational database with the following main entities:
 - **Dashboard**: Overview with metrics, charts, and activity feeds
 - **Campaigns**: Campaign management and creation interface
 - **Contacts**: Lead management and contact database
+- **Lead Scoring**: AI-powered lead prioritization with scoring analytics
+- **Templates**: Email template management with performance tracking and A/B testing
+- **Sequence Builder**: Visual drag-and-drop email sequence creation with conditional workflows
+- **Integrations**: Third-party service connections and API management
+- **Analytics**: Advanced performance analytics and insights
+- **Settings**: User preferences and account configuration
 - **Setup**: Onboarding flow for new users
 
 ## Data Flow
@@ -103,6 +109,15 @@ The application uses a relational database with the following main entities:
 - **NODE_ENV**: Environment mode (development/production)
 
 ## Recent Changes
+- July 04, 2025: Major Platform Enhancement and Advanced Features
+  - **Advanced Email Templates System**: Comprehensive template management with categories, performance tracking, and A/B testing capabilities
+  - **AI-Powered Lead Scoring**: Smart lead prioritization system with grade-based scoring, demographic and behavioral analysis
+  - **Visual Sequence Builder**: Drag-and-drop email sequence creation with conditional logic and branching workflows
+  - **Real-time Notification Center**: Live notification system with categorization, filtering, and action-based alerts
+  - **Enhanced Navigation**: Added new pages for Templates, Lead Scoring, and Sequence Builder with professional sidebar integration
+  - **Performance Analytics**: Advanced analytics for template performance, lead scoring insights, and sequence effectiveness
+  - **User Experience Upgrades**: Improved interface with notification badges, progress indicators, and interactive dashboards
+
 - July 03, 2025: Authentication System and Security Implementation
   - **Complete Authentication System**: Implemented session-based user authentication with login/register pages
   - **Session Management**: Added PostgreSQL session storage with secure HTTP-only cookies

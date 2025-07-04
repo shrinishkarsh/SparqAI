@@ -15,15 +15,22 @@ import {
   Zap,
   ChevronUp,
   Link as LinkIcon,
-  LogOut
+  LogOut,
+  FileText,
+  Target,
+  Star
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: ChartLine },
   { name: "Campaigns", href: "/campaigns", icon: Megaphone, badge: "3" },
   { name: "Contacts", href: "/contacts", icon: Users, count: "2,847" },
+  { name: "Lead Scoring", href: "/lead-scoring", icon: Target, badge: "New" },
+  { name: "Templates", href: "/templates", icon: FileText },
+  { name: "Sequence Builder", href: "/sequence-builder", icon: Workflow, badge: "Pro" },
   { name: "Integrations", href: "/integrations", icon: LinkIcon },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Settings", href: "/settings", icon: Settings },
@@ -36,7 +43,7 @@ export function Sidebar() {
   return (
     <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg border-r border-gray-200">
       {/* Logo Section */}
-      <div className="flex items-center px-6 py-4 border-b border-gray-200">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
         <div className="flex items-center">
           <div className="w-10 h-10 relative">
             <svg viewBox="0 0 40 40" className="w-full h-full">
@@ -75,6 +82,7 @@ export function Sidebar() {
             Pro
           </span>
         </div>
+        <NotificationCenter />
       </div>
 
       {/* Navigation Menu */}
