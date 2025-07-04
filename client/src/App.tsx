@@ -35,12 +35,12 @@ function Router() {
     );
   }
   
-  // Always show login portal first if not authenticated
+  // Show landing page if not authenticated
   if (!isAuthenticated) {
-    return <LoginPortal />;
+    return <Landing />;
   }
   
-  // Show onboarding for first-time users (new registrations)
+  // Show onboarding if user hasn't completed setup
   if (user && !user.isSetupComplete) {
     return <Onboarding />;
   }
