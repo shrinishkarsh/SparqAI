@@ -277,7 +277,7 @@ export default function Settings() {
                       <div className="flex space-x-2">
                         <Input
                           type={showApiKey ? "text" : "password"}
-                          defaultValue="sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                          placeholder="Enter your OpenAI API key"
                           className="flex-1"
                         />
                         <Button
