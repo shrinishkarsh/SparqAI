@@ -14,6 +14,7 @@ import Settings from "@/pages/Settings";
 import Onboarding from "@/pages/Onboarding";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import Help from "@/pages/Help";
 import NotFound from "@/pages/not-found";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { useAuth } from "@/hooks/useAuth";
@@ -59,6 +60,7 @@ function Router() {
           <Route path="/analytics" component={Analytics} />
           <Route path="/sequences" component={Sequences} />
           <Route path="/settings" component={Settings} />
+          <Route path="/help" component={Help} />
           <Route path="/setup" component={Setup} />
           <Route path="/onboarding" component={Onboarding} />
           <Route component={NotFound} />

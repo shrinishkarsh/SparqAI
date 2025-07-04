@@ -721,6 +721,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Support ticket endpoint
+  app.post("/api/support/ticket", requireAuth, async (req, res) => {
+    try {
+      const { name, email, subject, message, priority } = req.body;
+      
+      // Validate required fields
+      if (!name || !email || !subject || !message) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
+
+      // In a real application, you would save this to a database or send it to a support system
+      // For now, we'll simulate the ticket creation
+      const ticketId = `TICKET-${Date.now()}`;
+      
+      // Log the support ticket (in production, you'd save to database or send to support system)
+      console.log(`Support Ticket Created: ${ticketId}`, {
+        name,
+        email,
+        subject,
+        message,
+        priority: priority || 'medium',
+        timestamp: new Date().toISOString(),
+        userId: req.session.userId
+      });
+
+      res.json({ 
+        success: true, 
+        ticketId,
+        message: "Support ticket created successfully. We'll get back to you soon!" 
+      });
+    } catch (error) {
+      console.error('Support ticket creation error:', error);
+      res.status(500).json({ message: "Failed to create support ticket" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
