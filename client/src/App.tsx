@@ -15,9 +15,7 @@ import Onboarding from "@/pages/Onboarding";
 import Landing from "@/pages/Landing";
 import LoginPortal from "@/pages/LoginPortal";
 import Help from "@/pages/Help";
-import { Templates } from "@/pages/Templates";
-import { LeadScoring } from "@/pages/LeadScoring";
-import { SequenceBuilder } from "@/pages/SequenceBuilder";
+
 import NotFound from "@/pages/not-found";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { useAuth } from "@/hooks/useAuth";
@@ -56,9 +54,6 @@ function Router() {
           <Route path="/integrations" component={Integrations} />
           <Route path="/analytics" component={Analytics} />
           <Route path="/sequences" component={Sequences} />
-          <Route path="/sequence-builder" component={SequenceBuilder} />
-          <Route path="/templates" component={Templates} />
-          <Route path="/lead-scoring" component={LeadScoring} />
           <Route path="/settings" component={Settings} />
           <Route path="/help" component={Help} />
           <Route path="/setup" component={Setup} />
