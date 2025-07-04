@@ -13,6 +13,7 @@ import Integrations from "@/pages/Integrations";
 import Settings from "@/pages/Settings";
 import Onboarding from "@/pages/Onboarding";
 import Landing from "@/pages/Landing";
+import LoginPortal from "@/pages/LoginPortal";
 import Help from "@/pages/Help";
 import { Templates } from "@/pages/Templates";
 import { LeadScoring } from "@/pages/LeadScoring";
@@ -34,12 +35,12 @@ function Router() {
     );
   }
   
-  // Show landing page if not authenticated
+  // Always show login portal first if not authenticated
   if (!isAuthenticated) {
-    return <Landing />;
+    return <LoginPortal />;
   }
   
-  // Show onboarding if user hasn't completed setup
+  // Show onboarding for first-time users (new registrations)
   if (user && !user.isSetupComplete) {
     return <Onboarding />;
   }
