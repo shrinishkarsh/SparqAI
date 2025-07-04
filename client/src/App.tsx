@@ -34,14 +34,9 @@ function Router() {
     );
   }
   
-  // Redirect to Replit Auth if not authenticated
+  // Show landing page if not authenticated
   if (!isAuthenticated) {
-    window.location.href = "/api/login";
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-      </div>
-    );
+    return <Landing />;
   }
   
   // Show onboarding if user hasn't completed setup
