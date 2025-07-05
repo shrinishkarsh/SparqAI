@@ -9,20 +9,11 @@ export default function Landing() {
       <header className="px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center">
-            <div className="w-10 h-10 relative">
-              <svg viewBox="0 0 40 40" className="w-full h-full">
-                <defs>
-                  <radialGradient id="logoGradient" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#3b82f6" />
-                    <stop offset="100%" stopColor="#1e40af" />
-                  </radialGradient>
-                </defs>
-                <circle cx="20" cy="20" r="18" fill="url(#logoGradient)" />
-                <path d="M12 20 L18 14 L28 24" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="18" cy="14" r="2" fill="white" />
-                <circle cx="28" cy="24" r="2" fill="white" />
-              </svg>
-            </div>
+            <img 
+              src="@assets/design-a-bold-modern-tech-logo-for-sparq_14j9N13HTGSD3AzvAiwyqw_jl3gu8UgQQin7SY_z4jhiQ_1751562267235.jpeg" 
+              alt="SparqAI Logo" 
+              className="w-10 h-10 object-cover rounded-lg"
+            />
             <span className="ml-3 text-2xl font-bold text-gray-900">SparqAI</span>
           </div>
           <Button onClick={() => window.location.href = '/api/login'} className="bg-blue-600 hover:bg-blue-700">

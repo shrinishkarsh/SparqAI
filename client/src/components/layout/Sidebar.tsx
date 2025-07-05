@@ -42,38 +42,11 @@ export function Sidebar() {
       {/* Logo Section */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
         <div className="flex items-center">
-          <div className="w-10 h-10 relative">
-            <svg viewBox="0 0 40 40" className="w-full h-full">
-              <defs>
-                <linearGradient id="sparqGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#6366f1" />
-                  <stop offset="100%" stopColor="#8b5cf6" />
-                </linearGradient>
-              </defs>
-              <rect width="40" height="40" rx="8" fill="url(#sparqGradient)" />
-              
-              {/* S letter with spark/lightning effect */}
-              <path
-                d="M24 12 C28 12, 30 14, 30 17 C30 19, 28 20, 26 20 L22 20 C20 20, 18 21, 18 23 C18 26, 20 28, 24 28 L28 28"
-                stroke="white"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                fill="none"
-              />
-              
-              {/* Lightning bolt accent */}
-              <path
-                d="M15 10 L12 16 L15 16 L12 20 L18 14 L15 14 L18 10 Z"
-                fill="white"
-                opacity="0.9"
-              />
-              
-              {/* Spark dots */}
-              <circle cx="32" cy="12" r="1" fill="white" opacity="0.8" />
-              <circle cx="30" cy="30" r="1.5" fill="white" opacity="0.7" />
-              <circle cx="8" cy="25" r="1" fill="white" opacity="0.6" />
-            </svg>
-          </div>
+          <img 
+            src="@assets/design-a-bold-modern-tech-logo-for-sparq_14j9N13HTGSD3AzvAiwyqw_jl3gu8UgQQin7SY_z4jhiQ_1751562267235.jpeg" 
+            alt="SparqAI Logo" 
+            className="w-10 h-10 object-cover rounded-lg"
+          />
           <span className="ml-3 text-xl font-bold text-gray-900">SparqAI</span>
           <span className="ml-2 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
             Pro
