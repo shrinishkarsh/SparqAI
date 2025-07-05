@@ -40,6 +40,8 @@ function Router() {
   
   // Show onboarding if user hasn't completed setup
   if (user && !user.isSetupComplete) {
+    console.log('User object:', user);
+    console.log('isSetupComplete:', user.isSetupComplete);
     return <Onboarding />;
   }
   
