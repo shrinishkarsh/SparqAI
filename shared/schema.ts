@@ -28,7 +28,7 @@ export const users = pgTable("users", {
 
 export const companies = pgTable("companies", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  userId: varchar("user_id").references(() => users.id),
   name: text("name").notNull(),
   website: text("website"),
   description: text("description"),
@@ -69,7 +69,7 @@ export const products = pgTable("products", {
 
 export const campaigns = pgTable("campaigns", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  userId: varchar("user_id").references(() => users.id),
   companyId: integer("company_id").references(() => companies.id),
   productId: integer("product_id").references(() => products.id),
   name: text("name").notNull(),

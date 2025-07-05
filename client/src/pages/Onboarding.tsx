@@ -151,7 +151,7 @@ export default function Onboarding() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.companyName,
-          userId: parseInt(user.id), // Convert string ID to number for company table
+          userId: user.id, // Use string ID as expected by schema
           size: formData.companySize,
           industry: formData.industry,
           website: formData.website,
