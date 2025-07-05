@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
+import path from "path";
 import { storage } from "./storage";
 import { openaiService } from "./services/openai";
 import { getSmartleadService, initializeSmartleadService } from "./services/smartlead";
@@ -25,6 +26,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/health', (req, res) => {
     console.log('Health check route hit');
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  // Favicon route (no auth required)
+  app.get('/favicon.ico', (req, res) => {
+    res.sendFile(path.join(import.meta.dirname, '../attached_assets/favicon_1751704644486.ico'));
   });
 
   // Auth routes - using direct app routing for priority
