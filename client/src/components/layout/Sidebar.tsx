@@ -28,7 +28,6 @@ const navigation = [
   { name: "Dashboard", href: "/", icon: ChartLine },
   { name: "Campaigns", href: "/campaigns", icon: Megaphone, badge: "3" },
   { name: "Contacts", href: "/contacts", icon: Users, count: "2,847" },
-  { name: "Sequences", href: "/sequences", icon: Workflow },
   { name: "Integrations", href: "/integrations", icon: LinkIcon },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Settings", href: "/settings", icon: Settings },

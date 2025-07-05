@@ -109,6 +109,13 @@ The application uses a relational database with the following main entities:
 - **NODE_ENV**: Environment mode (development/production)
 
 ## Recent Changes
+- July 05, 2025: Navigation Simplification and Tab Consolidation
+  - **Merged Campaigns and Sequences**: Combined campaigns and sequences into a single tab with tabbed interface for better organization
+  - **Simplified Navigation**: Removed Lead Scoring and Templates sections from main navigation for cleaner interface
+  - **Unified Campaign Management**: Users can now manage both campaigns and email sequences from one centralized location
+  - **Maintained Functionality**: All existing campaign and sequence features preserved within the new tabbed interface
+  - **Updated Page Structure**: Campaigns page now includes tabs for switching between campaigns and sequences views
+
 - July 04, 2025: Replit Auth Integration Successfully Completed
   - **Complete Replit Auth Integration**: Fully functional OAuth authentication system with secure session management
   - **Fixed Critical Routing Issues**: Resolved Vite middleware conflicts that were preventing API communication

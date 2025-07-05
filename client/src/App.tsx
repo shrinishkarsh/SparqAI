@@ -53,7 +53,7 @@ function Router() {
           <Route path="/contacts" component={Contacts} />
           <Route path="/integrations" component={Integrations} />
           <Route path="/analytics" component={Analytics} />
-          <Route path="/sequences" component={Sequences} />
+
           <Route path="/settings" component={Settings} />
           <Route path="/help" component={Help} />
           <Route path="/setup" component={Setup} />
