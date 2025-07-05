@@ -12,7 +12,7 @@ import Sequences from "@/pages/Sequences";
 import Integrations from "@/pages/Integrations";
 import Settings from "@/pages/Settings";
 import Onboarding from "@/pages/Onboarding";
-import Landing from "@/pages/Landing";
+import Auth from "@/pages/Auth";
 import LoginPortal from "@/pages/LoginPortal";
 import Help from "@/pages/Help";
 
@@ -33,9 +33,9 @@ function Router() {
     );
   }
   
-  // Show landing page if not authenticated
+  // Show auth page if not authenticated
   if (!isAuthenticated) {
-    return <Landing />;
+    return <Auth />;
   }
   
   // Show onboarding if user hasn't completed setup

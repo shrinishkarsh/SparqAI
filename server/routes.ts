@@ -9,11 +9,10 @@ import {
   insertUserSchema, insertCompanySchema, insertCampaignSchema, 
   insertContactSchema, insertActivitySchema, insertIntegrationSchema, insertProductSchema
 } from "@shared/schema";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { login, register, logout, isAuthenticated } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup Replit Auth
-  await setupAuth(app);
+  // Custom authentication routes
 
   // Priority middleware for API routes - must run before Vite catch-all
   app.use('/api', (req, res, next) => {
@@ -33,10 +32,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.sendFile(path.join(import.meta.dirname, '../attached_assets/favicon_1751704644486.ico'));
   });
 
-  // Auth routes - using direct app routing for priority
+  // Authentication routes
+  app.post('/api/auth/login', login);
+  app.post('/api/auth/register', register);
+  app.post('/api/auth/logout', logout);
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
@@ -76,10 +78,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Setup completion endpoint
-  app.post("/api/users/:id/setup", isAuthenticated, async (req, res) => {
+  app.post("/api/users/:id/setup", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.params.id;
-      const currentUserId = req.user.claims.sub;
+      const currentUserId = req.session.userId;
       
       // Only allow users to update their own setup status
       if (userId !== currentUserId) {

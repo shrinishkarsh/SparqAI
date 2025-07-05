@@ -130,7 +130,10 @@ export function Sidebar() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => window.location.href = '/api/logout'}
+            onClick={async () => {
+              await fetch('/api/auth/logout', { method: 'POST' });
+              window.location.href = '/';
+            }}
             className="flex-shrink-0 text-gray-400 hover:text-gray-600 p-1"
           >
             <LogOut className="h-4 w-4" />
