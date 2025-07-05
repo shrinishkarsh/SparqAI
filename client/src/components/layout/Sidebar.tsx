@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
+import logoImage from "@assets/design-a-bold-modern-tech-logo-for-sparq_14j9N13HTGSD3AzvAiwyqw_jl3gu8UgQQin7SY_z4jhiQ_1751562267235.jpeg";
 import { 
   ChartLine, 
   Megaphone, 
@@ -43,9 +44,9 @@ export function Sidebar() {
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
         <div className="flex items-center">
           <img 
-            src="@assets/design-a-bold-modern-tech-logo-for-sparq_14j9N13HTGSD3AzvAiwyqw_jl3gu8UgQQin7SY_z4jhiQ_1751562267235.jpeg" 
+            src={logoImage} 
             alt="SparqAI Logo" 
-            className="w-10 h-10 object-cover rounded-lg"
+            className="w-12 h-12 object-contain rounded-lg bg-white p-1 shadow-sm"
           />
           <span className="ml-3 text-xl font-bold text-gray-900">SparqAI</span>
           <span className="ml-2 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">

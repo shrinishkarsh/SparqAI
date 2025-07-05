@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import logoImage from "@assets/design-a-bold-modern-tech-logo-for-sparq_14j9N13HTGSD3AzvAiwyqw_jl3gu8UgQQin7SY_z4jhiQ_1751562267235.jpeg";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, BarChart3, Users, Zap } from "lucide-react";
 
@@ -10,9 +11,9 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center">
             <img 
-              src="@assets/design-a-bold-modern-tech-logo-for-sparq_14j9N13HTGSD3AzvAiwyqw_jl3gu8UgQQin7SY_z4jhiQ_1751562267235.jpeg" 
+              src={logoImage} 
               alt="SparqAI Logo" 
-              className="w-10 h-10 object-cover rounded-lg"
+              className="w-12 h-12 object-contain rounded-lg bg-white p-1 shadow-sm"
             />
             <span className="ml-3 text-2xl font-bold text-gray-900">SparqAI</span>
           </div>
