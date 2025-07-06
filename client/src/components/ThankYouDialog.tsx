@@ -18,7 +18,7 @@ export default function ThankYouDialog({ open, onClose }: ThankYouDialogProps) {
             Thanks for filling in the form. Our team will contact you shortly.
           </DialogDescription>
           <p className="text-sm text-gray-600">
-            The demo can be accessed upon purchase.
+            SparqAI platform can be accessed upon purchase.
           </p>
           <Button onClick={onClose} className="w-full">
             Got it
