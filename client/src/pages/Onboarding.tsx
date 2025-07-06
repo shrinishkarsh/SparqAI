@@ -28,6 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
+import ThankYouDialog from "@/components/ThankYouDialog";
 
 interface OnboardingData {
   // Company Information
@@ -95,6 +96,7 @@ const CRM_SYSTEMS = [
 
 export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [showThankYouDialog, setShowThankYouDialog] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -185,17 +187,20 @@ export default function Onboarding() {
       return company;
     },
     onSuccess: () => {
-      toast({ title: "Welcome to SparqAI! Your account is now set up." });
-      queryClient.invalidateQueries({ queryKey: ['/api/companies'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-      // Redirect to dashboard
-      setLocation("/");
+      setShowThankYouDialog(true);
     },
     onError: (error) => {
       console.error('Onboarding error:', error);
       toast({ title: "Setup failed. Please try again.", variant: "destructive" });
     },
   });
+
+  const handleThankYouClose = async () => {
+    setShowThankYouDialog(false);
+    // Log the user out
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/';
+  };
 
   const nextStep = () => {
     if (currentStep < totalSteps) {
@@ -659,6 +664,12 @@ export default function Onboarding() {
           )}
         </div>
       </div>
+      
+      {/* Thank You Dialog */}
+      <ThankYouDialog 
+        open={showThankYouDialog} 
+        onClose={handleThankYouClose} 
+      />
     </div>
   );
 }

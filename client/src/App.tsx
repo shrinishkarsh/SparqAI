@@ -15,6 +15,7 @@ import Onboarding from "@/pages/Onboarding";
 import Auth from "@/pages/Auth";
 import LoginPortal from "@/pages/LoginPortal";
 import Help from "@/pages/Help";
+import PurchaseRequired from "@/pages/PurchaseRequired";
 
 import NotFound from "@/pages/not-found";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -41,6 +42,11 @@ function Router() {
   // Show onboarding if user hasn't completed setup
   if (user && !user.isSetupComplete) {
     return <Onboarding />;
+  }
+  
+  // Show purchase required page if user has completed setup
+  if (user && user.isSetupComplete) {
+    return <PurchaseRequired />;
   }
   
   return (

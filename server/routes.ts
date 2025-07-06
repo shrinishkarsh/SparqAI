@@ -102,7 +102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Company routes
   app.get("/api/users/:userId/company", isAuthenticated, async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const userId = req.params.userId;
       const company = await storage.getCompanyByUserId(userId);
       res.json(company);
     } catch (error) {

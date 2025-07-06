@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
+import ThankYouDialog from "@/components/ThankYouDialog";
 
 const SETUP_STEPS = [
   {
@@ -40,6 +41,7 @@ export default function Setup() {
     integrations: null,
     campaign: null
   });
+  const [showThankYouDialog, setShowThankYouDialog] = useState(false);
 
   const { toast } = useToast();
   const { user } = useAuth();
@@ -64,11 +66,7 @@ export default function Setup() {
       });
     },
     onSuccess: () => {
-      toast({
-        title: "Setup Complete!",
-        description: "Your SparqAI account is now ready to generate leads.",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      setShowThankYouDialog(true);
     },
     onError: (error) => {
       toast({
@@ -78,6 +76,13 @@ export default function Setup() {
       });
     },
   });
+
+  const handleThankYouClose = async () => {
+    setShowThankYouDialog(false);
+    // Log the user out
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/';
+  };
 
   const progressPercentage = ((currentStep + 1) / SETUP_STEPS.length) * 100;
 
@@ -270,6 +275,12 @@ export default function Setup() {
           </div>
         </div>
       </main>
+      
+      {/* Thank You Dialog */}
+      <ThankYouDialog 
+        open={showThankYouDialog} 
+        onClose={handleThankYouClose} 
+      />
     </div>
   );
 }
