@@ -109,6 +109,12 @@ The application uses a relational database with the following main entities:
 - **NODE_ENV**: Environment mode (development/production)
 
 ## Recent Changes
+- July 08, 2025: Onboarding Flow Simplification
+  - **Removed Thank You Dialog**: Removed the post-setup thank you dialog that appeared after onboarding completion
+  - **Direct Dashboard Redirect**: Users now redirect directly to dashboard after completing onboarding, with a toast notification
+  - **Streamlined User Experience**: Eliminated the logout step, users stay logged in and can access the platform immediately
+  - **Authentication Flow Update**: Setup → Onboarding → Dashboard (direct access)
+
 - July 06, 2025: Post-Setup Flow and Database Schema Fixes
   - **Database Schema Corrections**: Fixed critical type mismatch where all user_id columns were integer instead of varchar to match users.id type
   - **Post-Setup Thank You Dialog**: Added dialog that appears after onboarding completion with "Our team will contact you shortly" message
