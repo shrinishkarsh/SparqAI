@@ -6,15 +6,11 @@ import { CampaignChart } from "@/components/charts/CampaignChart";
 import { InsightsPanel } from "@/components/dashboard/InsightsPanel";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { ActiveCampaigns } from "@/components/dashboard/ActiveCampaigns";
-import { EnhancedCampaignModal } from "@/components/campaigns/EnhancedCampaignModal";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Users, MessageSquare, Target, Calendar, ArrowUp } from "lucide-react";
+import { Users, MessageSquare, Target, Calendar, ArrowUp } from "lucide-react";
 import { api } from "@/lib/api";
 
 export default function Dashboard() {
-  const [showCreateCampaign, setShowCreateCampaign] = useState(false);
-  
   const { data: stats, isLoading } = useQuery({
     queryKey: ["/api/dashboard/stats/1"],
     queryFn: () => api.getDashboardStats(1),
@@ -36,15 +32,7 @@ export default function Dashboard() {
       <Header
         title="Dashboard"
         subtitle="Welcome back! Here's your AI SDR performance overview."
-      >
-        <Button 
-          className="sparq-gradient hover:sparq-gradient-hover text-white"
-          onClick={() => setShowCreateCampaign(true)}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          New Campaign
-        </Button>
-      </Header>
+      />
 
       <main className="flex-1 p-6">
         {/* Key Metrics Cards */}
@@ -182,11 +170,7 @@ export default function Dashboard() {
         </Card>
       </main>
 
-      <EnhancedCampaignModal
-        open={showCreateCampaign}
-        onOpenChange={setShowCreateCampaign}
-        userId={1}
-      />
+
     </div>
   );
 }

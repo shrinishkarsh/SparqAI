@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,14 +11,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Plus, Upload, Brain, Mail, Linkedin, FileSpreadsheet, Users, Target, Zap } from "lucide-react";
-import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-
-const currentUser = { id: 1, email: "alex@company.com", firstName: "Alex", lastName: "Johnson" };
+import { useAuth } from "@/hooks/useAuth";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 const campaignSchema = z.object({
   name: z.string().min(1, "Campaign name is required"),
@@ -49,8 +48,9 @@ interface CreateCampaignModalProps {
 }
 
 export function CreateCampaignModal({ trigger, open, onOpenChange }: CreateCampaignModalProps) {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0); // Start at 0 for product selection
   const [selectedChannels, setSelectedChannels] = useState<string[]>([]);
   const [listSource, setListSource] = useState<"upload" | "ai_generated">("upload");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -62,15 +62,18 @@ export function CreateCampaignModal({ trigger, open, onOpenChange }: CreateCampa
 
   // Fetch company data
   const { data: company } = useQuery({
-    queryKey: ['/api/companies', currentUser.id],
-    queryFn: () => api.getCompanyByUserId(currentUser.id),
+    queryKey: [`/api/companies/user/${user?.id}`],
+    enabled: !!user?.id,
   });
 
   // Fetch products
   const { data: products = [], isLoading: productsLoading } = useQuery({
-    queryKey: ['/api/products', currentUser.id],
-    queryFn: () => api.getProductsByUserId(currentUser.id),
+    queryKey: [`/api/products/user/${user?.id}`],
+    enabled: !!user?.id,
   });
+
+  // Check if user can create campaigns
+  const canCreateCampaign = products && products.length > 0;
 
   const form = useForm({
     resolver: zodResolver(campaignSchema),
@@ -86,17 +89,21 @@ export function CreateCampaignModal({ trigger, open, onOpenChange }: CreateCampa
   });
 
   const createCampaignMutation = useMutation({
-    mutationFn: (data: any) => api.createCampaign({
-      ...data,
-      userId: currentUser.id,
-      companyId: company?.id,
-      status: "draft",
+    mutationFn: (data: any) => apiRequest('/api/campaigns', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...data,
+        userId: user?.id,
+        companyId: company?.id,
+        status: "draft",
+      }),
     }),
     onSuccess: () => {
       toast({ title: "Campaign created successfully!" });
       queryClient.invalidateQueries({ queryKey: ['/api/campaigns'] });
       setModalOpen(false);
-      setStep(1);
+      setStep(0);
       form.reset();
       setSelectedChannels([]);
       setUploadedFile(null);
@@ -143,15 +150,97 @@ export function CreateCampaignModal({ trigger, open, onOpenChange }: CreateCampa
   };
 
   const nextStep = () => {
-    if (step < 4) setStep(step + 1);
+    if (step < 3) setStep(step + 1);
   };
 
   const prevStep = () => {
-    if (step > 1) setStep(step - 1);
+    if (step > 0) setStep(step - 1);
   };
 
   const renderStepContent = () => {
     switch (step) {
+      case 0:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-semibold">Select Product</h3>
+              <p className="text-gray-600">Choose the product you want to promote in this campaign</p>
+            </div>
+
+            {productsLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="p-4 border rounded-lg animate-pulse">
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                ))}
+              </div>
+            ) : products.length === 0 ? (
+              <Card className="text-center py-8">
+                <CardContent>
+                  <Target className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No products found</h3>
+                  <p className="text-gray-600 mb-4">
+                    You need to create products before starting campaigns
+                  </p>
+                  <Button variant="outline" onClick={() => {
+                    setModalOpen(false);
+                    window.location.href = '/products';
+                  }}>
+                    Go to Products
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <FormField
+                control={form.control}
+                name="productId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <div className="grid gap-3">
+                        {products.map((product: any) => (
+                          <Card 
+                            key={product.id} 
+                            className={`cursor-pointer transition-all hover:shadow-md ${
+                              field.value === product.id ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                            }`}
+                            onClick={() => field.onChange(product.id)}
+                          >
+                            <CardHeader className="pb-3">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <CardTitle className="text-base">{product.name}</CardTitle>
+                                  <CardDescription>{product.category || product.price}</CardDescription>
+                                </div>
+                                <Badge variant="outline">{product.price}</Badge>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="pt-0">
+                              <p className="text-sm text-gray-600 line-clamp-2">
+                                {product.description}
+                              </p>
+                              {product.targetAudience && (
+                                <div className="mt-2 pt-2 border-t">
+                                  <p className="text-xs text-gray-500">
+                                    <strong>Target:</strong> {product.targetAudience}
+                                  </p>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+          </div>
+        );
+      
       case 1:
         return (
           <div className="space-y-6">
@@ -226,85 +315,6 @@ export function CreateCampaignModal({ trigger, open, onOpenChange }: CreateCampa
         return (
           <div className="space-y-6">
             <div className="text-center mb-6">
-              <h3 className="text-lg font-semibold">Select Product</h3>
-              <p className="text-gray-600">Choose the product you want to promote</p>
-            </div>
-
-            {productsLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="p-4 border rounded-lg animate-pulse">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  </div>
-                ))}
-              </div>
-            ) : products.length === 0 ? (
-              <Card className="text-center py-8">
-                <CardContent>
-                  <Target className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No products found</h3>
-                  <p className="text-gray-600 mb-4">
-                    You need to create products before starting campaigns
-                  </p>
-                  <Button variant="outline" onClick={() => setModalOpen(false)}>
-                    Go to Products
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <FormField
-                control={form.control}
-                name="productId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <div className="grid gap-3">
-                        {products.map((product: any) => (
-                          <Card 
-                            key={product.id} 
-                            className={`cursor-pointer transition-all hover:shadow-md ${
-                              field.value === product.id ? 'ring-2 ring-blue-500 bg-blue-50' : ''
-                            }`}
-                            onClick={() => field.onChange(product.id)}
-                          >
-                            <CardHeader className="pb-3">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <CardTitle className="text-base">{product.name}</CardTitle>
-                                  <CardDescription>{product.category}</CardDescription>
-                                </div>
-                                <Badge variant="outline">{product.price}</Badge>
-                              </div>
-                            </CardHeader>
-                            <CardContent className="pt-0">
-                              <p className="text-sm text-gray-600 line-clamp-2">
-                                {product.description}
-                              </p>
-                              {product.targetAudience && (
-                                <div className="mt-2 pt-2 border-t">
-                                  <p className="text-xs text-gray-500">
-                                    <strong>Target:</strong> {product.targetAudience}
-                                  </p>
-                                </div>
-                              )}
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-          </div>
-        );
-
-      case 3:
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
               <h3 className="text-lg font-semibold">Choose Channels</h3>
               <p className="text-gray-600">Select how you want to reach your prospects</p>
             </div>
@@ -352,7 +362,7 @@ export function CreateCampaignModal({ trigger, open, onOpenChange }: CreateCampa
           </div>
         );
 
-      case 4:
+      case 3:
         return (
           <div className="space-y-6">
             <div className="text-center mb-6">
@@ -489,13 +499,13 @@ export function CreateCampaignModal({ trigger, open, onOpenChange }: CreateCampa
 
   const canProceed = () => {
     switch (step) {
+      case 0:
+        return form.watch("productId") > 0;
       case 1:
         return form.watch("name") && form.watch("description") && form.watch("strategy");
       case 2:
-        return form.watch("productId") > 0;
-      case 3:
         return selectedChannels.length > 0;
-      case 4:
+      case 3:
         return listSource === "ai_generated" || (listSource === "upload" && uploadedFile);
       default:
         return false;
@@ -504,10 +514,10 @@ export function CreateCampaignModal({ trigger, open, onOpenChange }: CreateCampa
 
   const getStepTitle = () => {
     switch (step) {
+      case 0: return "Select Product";
       case 1: return "Campaign Basics";
-      case 2: return "Select Product";
-      case 3: return "Choose Channels";
-      case 4: return "Contact List";
+      case 2: return "Choose Channels";
+      case 3: return "Contact List";
       default: return "Create Campaign";
     }
   };
@@ -525,16 +535,16 @@ export function CreateCampaignModal({ trigger, open, onOpenChange }: CreateCampa
 
         {/* Progress Indicator */}
         <div className="flex items-center justify-between mb-6">
-          {[1, 2, 3, 4].map((stepNum) => (
+          {[0, 1, 2, 3].map((stepNum) => (
             <div key={stepNum} className="flex items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                 stepNum <= step 
                   ? 'bg-blue-500 text-white' 
                   : 'bg-gray-200 text-gray-600'
               }`}>
-                {stepNum}
+                {stepNum + 1}
               </div>
-              {stepNum < 4 && (
+              {stepNum < 3 && (
                 <div className={`w-12 h-0.5 mx-2 ${
                   stepNum < step ? 'bg-blue-500' : 'bg-gray-200'
                 }`} />
@@ -545,10 +555,32 @@ export function CreateCampaignModal({ trigger, open, onOpenChange }: CreateCampa
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {renderStepContent()}
+            {/* Show no products message when applicable */}
+            {!productsLoading && products.length === 0 && step === 0 ? (
+              <Card className="text-center py-8">
+                <CardContent>
+                  <Target className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No products found</h3>
+                  <p className="text-gray-600 mb-4">
+                    You need to create products before starting campaigns. Each campaign must be tied to a specific product.
+                  </p>
+                  <Button 
+                    type="button"
+                    onClick={() => {
+                      setModalOpen(false);
+                      window.location.href = '/products';
+                    }}
+                  >
+                    Go to Products
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              renderStepContent()
+            )}
 
             <div className="flex justify-between pt-6 border-t">
-              {step > 1 ? (
+              {step > 0 ? (
                 <Button type="button" variant="outline" onClick={prevStep}>
                   Previous
                 </Button>
@@ -565,7 +597,7 @@ export function CreateCampaignModal({ trigger, open, onOpenChange }: CreateCampa
                   Cancel
                 </Button>
                 
-                {step < 4 ? (
+                {step < 3 ? (
                   <Button 
                     type="button" 
                     onClick={nextStep}
