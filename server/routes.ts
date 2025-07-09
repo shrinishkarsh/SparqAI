@@ -111,6 +111,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get company by user ID (alternative route)
+  app.get("/api/companies/user/:userId", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const company = await storage.getCompanyByUserId(userId);
+      res.json(company);
+    } catch (error) {
+      console.error("Error fetching company:", error);
+      res.status(500).json({ message: "Failed to fetch company" });
+    }
+  });
+
   app.post("/api/companies", isAuthenticated, async (req, res) => {
     try {
       const validatedData = insertCompanySchema.parse(req.body);

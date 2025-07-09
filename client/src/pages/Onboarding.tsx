@@ -162,6 +162,10 @@ export default function Onboarding() {
           salesProcess: formData.salesProcess,
           geographicFocus: formData.geographicFocus,
           targetIcp: formData.idealCustomerProfile,
+          companyGoals: formData.primaryGoals.join(', '), // Convert array to string
+          revenueModel: formData.averageDealSize, // Using average deal size for revenue model
+          competitiveAdvantage: '', // Not collected during onboarding
+          preferredChannels: formData.preferredChannels,
         }),
       });
 

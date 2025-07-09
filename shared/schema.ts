@@ -45,6 +45,7 @@ export const companies = pgTable("companies", {
   competitiveAdvantage: text("competitive_advantage"),
   revenueModel: text("revenue_model"),
   geographicFocus: text("geographic_focus"),
+  preferredChannels: jsonb("preferred_channels").default([]),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
