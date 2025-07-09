@@ -55,7 +55,6 @@ export function CreateCampaignModal({ trigger, open, onOpenChange }: CreateCampa
   const [listSource, setListSource] = useState<"upload" | "ai_generated">("upload");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   const modalOpen = open !== undefined ? open : isOpen;
   const setModalOpen = onOpenChange || setIsOpen;

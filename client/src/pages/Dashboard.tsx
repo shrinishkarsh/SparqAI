@@ -1,19 +1,24 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Header } from "@/components/layout/Header";
 import { MetricsCard } from "@/components/dashboard/MetricsCard";
 import { CampaignChart } from "@/components/charts/CampaignChart";
 import { InsightsPanel } from "@/components/dashboard/InsightsPanel";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { ActiveCampaigns } from "@/components/dashboard/ActiveCampaigns";
+import { QuickActivityForm } from "@/components/dashboard/QuickActivityForm";
+import { QuickContactForm } from "@/components/dashboard/QuickContactForm";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, MessageSquare, Target, Calendar, ArrowUp } from "lucide-react";
 import { api } from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const { data: stats, isLoading } = useQuery({
-    queryKey: ["/api/dashboard/stats/1"],
-    queryFn: () => api.getDashboardStats(1),
+    queryKey: [`/api/dashboard/stats/${user?.id}`],
+    queryFn: () => api.getDashboardStats(user?.id || ''),
+    enabled: !!user?.id,
   });
 
   if (isLoading) {
@@ -119,6 +124,12 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           <ActivityFeed />
           <ActiveCampaigns />
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          <QuickActivityForm />
+          <QuickContactForm />
         </div>
 
         {/* Setup Progress Card */}
