@@ -10,6 +10,7 @@ import {
   insertContactSchema, insertActivitySchema, insertIntegrationSchema, insertProductSchema
 } from "@shared/schema";
 import { login, register, logout, isAuthenticated } from "./auth";
+import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Custom authentication routes
@@ -365,11 +366,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/products", isAuthenticated, async (req, res) => {
     try {
+      console.log("Product creation request body:", req.body);
       const validatedData = insertProductSchema.parse(req.body);
+      console.log("Validated product data:", validatedData);
       const product = await storage.createProduct(validatedData);
+      console.log("Created product:", product);
       res.status(201).json(product);
     } catch (error) {
       console.error("Error creating product:", error);
+      if (error instanceof z.ZodError) {
+        console.error("Validation errors:", error.errors);
+        return res.status(400).json({ 
+          message: "Validation failed", 
+          errors: error.errors 
+        });
+      }
       res.status(500).json({ message: "Failed to create product" });
     }
   });

@@ -156,6 +156,7 @@ export default function Products() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted with data:', formData);
     if (editingProduct) {
       updateProductMutation.mutate({ id: editingProduct.id, ...formData });
     } else {
