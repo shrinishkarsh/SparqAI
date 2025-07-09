@@ -672,7 +672,7 @@ export class DatabaseStorage implements IStorage {
     return campaign || undefined;
   }
 
-  async getCampaignsByUserId(userId: number): Promise<Campaign[]> {
+  async getCampaignsByUserId(userId: string): Promise<Campaign[]> {
     const userCampaigns = await db.select().from(campaigns).where(eq(campaigns.userId, userId));
     return userCampaigns;
   }
@@ -704,7 +704,7 @@ export class DatabaseStorage implements IStorage {
     return contact || undefined;
   }
 
-  async getContactsByUserId(userId: number): Promise<Contact[]> {
+  async getContactsByUserId(userId: string): Promise<Contact[]> {
     const userContacts = await db.select().from(contacts).where(eq(contacts.userId, userId));
     return userContacts;
   }
@@ -741,7 +741,7 @@ export class DatabaseStorage implements IStorage {
     return activity || undefined;
   }
 
-  async getActivitiesByUserId(userId: number): Promise<Activity[]> {
+  async getActivitiesByUserId(userId: string): Promise<Activity[]> {
     const userActivities = await db.select().from(activities).where(eq(activities.userId, userId));
     return userActivities.sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
   }
@@ -759,12 +759,12 @@ export class DatabaseStorage implements IStorage {
     return integration || undefined;
   }
 
-  async getIntegrationsByUserId(userId: number): Promise<Integration[]> {
+  async getIntegrationsByUserId(userId: string): Promise<Integration[]> {
     const userIntegrations = await db.select().from(integrations).where(eq(integrations.userId, userId));
     return userIntegrations;
   }
 
-  async getIntegrationByType(userId: number, type: string): Promise<Integration | undefined> {
+  async getIntegrationByType(userId: string, type: string): Promise<Integration | undefined> {
     const [integration] = await db
       .select()
       .from(integrations)
@@ -796,7 +796,7 @@ export class DatabaseStorage implements IStorage {
     return product || undefined;
   }
 
-  async getProductsByUserId(userId: number): Promise<Product[]> {
+  async getProductsByUserId(userId: string): Promise<Product[]> {
     const userProducts = await db.select().from(products).where(eq(products.userId, userId));
     return userProducts;
   }

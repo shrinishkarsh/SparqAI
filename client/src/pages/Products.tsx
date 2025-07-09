@@ -44,7 +44,7 @@ export default function Products() {
   });
 
   const { data: products, isLoading } = useQuery({
-    queryKey: [`/api/products/user/${user?.id}`],
+    queryKey: [`/api/users/${user?.id}/products`],
     enabled: !!user?.id,
   });
 
@@ -56,19 +56,22 @@ export default function Products() {
   const createProductMutation = useMutation({
     mutationFn: async (productData: any) => {
       const companyData = Array.isArray(company) ? company[0] : company;
+      
+      const payload = {
+        ...productData,
+        userId: user?.id,
+        companyId: companyData?.id || null,
+        features: productData.features ? productData.features.split(",").map((f: string) => f.trim()).filter(Boolean) : [],
+      };
+      
       return apiRequest("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...productData,
-          userId: user?.id,
-          companyId: companyData?.id,
-          features: productData.features.split(",").map((f: string) => f.trim()).filter(Boolean),
-        }),
+        body: JSON.stringify(payload),
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/products/user/${user?.id}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}/products`] });
       setIsCreateDialogOpen(false);
       resetForm();
       toast({
@@ -76,10 +79,11 @@ export default function Products() {
         description: "Your product has been added to the catalog.",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Error creating product:', error);
       toast({
         title: "Failed to create product",
-        description: "Please try again later.",
+        description: error.message || "Please try again later.",
         variant: "destructive",
       });
     },
@@ -97,7 +101,7 @@ export default function Products() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/products/user/${user?.id}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}/products`] });
       setEditingProduct(null);
       resetForm();
       toast({
@@ -121,7 +125,7 @@ export default function Products() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/products/user/${user?.id}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}/products`] });
       toast({
         title: "Product deleted successfully",
         description: "The product has been removed from your catalog.",
@@ -199,14 +203,23 @@ export default function Products() {
             Manage your product catalog to create targeted campaigns
           </p>
         </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Product
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <Button onClick={() => {
+          console.log('Add Product button clicked');
+          setIsCreateDialogOpen(true);
+        }}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Product
+        </Button>
+      </div>
+
+      <Dialog open={isCreateDialogOpen || editingProduct !== null} onOpenChange={(open) => {
+        if (!open) {
+          setIsCreateDialogOpen(false);
+          setEditingProduct(null);
+          resetForm();
+        }
+      }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingProduct ? "Edit Product" : "Add New Product"}</DialogTitle>
               <DialogDescription>
@@ -330,7 +343,6 @@ export default function Products() {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
 
       {products && products.length === 0 ? (
         <Card>

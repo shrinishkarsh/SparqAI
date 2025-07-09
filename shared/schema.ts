@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb, varchar, index } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, varchar, index, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -51,7 +51,7 @@ export const companies = pgTable("companies", {
 
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  userId: varchar("user_id").references(() => users.id),
   companyId: integer("company_id").references(() => companies.id),
   name: text("name").notNull(),
   description: text("description"),
@@ -59,7 +59,10 @@ export const products = pgTable("products", {
   price: text("price"),
   features: jsonb("features").default([]),
   targetAudience: text("target_audience"),
-  useCases: jsonb("use_cases").default([]),
+  useCases: text("use_cases"),
+  monthlyRevenue: integer("monthly_revenue").default(0),
+  customerCount: integer("customer_count").default(0),
+  churnRate: numeric("churn_rate").default("0"),
   benefits: jsonb("benefits").default([]),
   competitiveAdvantage: text("competitive_advantage"),
   salesPoints: jsonb("sales_points").default([]),
@@ -95,7 +98,7 @@ export const campaigns = pgTable("campaigns", {
 
 export const contacts = pgTable("contacts", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  userId: varchar("user_id").references(() => users.id),
   campaignId: integer("campaign_id").references(() => campaigns.id),
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
@@ -116,7 +119,7 @@ export const contacts = pgTable("contacts", {
 
 export const activities = pgTable("activities", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  userId: varchar("user_id").references(() => users.id),
   campaignId: integer("campaign_id").references(() => campaigns.id),
   contactId: integer("contact_id").references(() => contacts.id),
   type: text("type").notNull(), // email_sent, response_received, meeting_scheduled, etc.
@@ -127,7 +130,7 @@ export const activities = pgTable("activities", {
 
 export const integrations = pgTable("integrations", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  userId: varchar("user_id").references(() => users.id),
   type: text("type").notNull(), // linkedin, email, crm
   isConnected: boolean("is_connected").default(false),
   credentials: jsonb("credentials").default({}),

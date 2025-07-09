@@ -152,7 +152,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Campaign routes
   app.get("/api/users/:userId/campaigns", isAuthenticated, async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const userId = req.params.userId;
       const campaigns = await storage.getCampaignsByUserId(userId);
       res.json(campaigns);
     } catch (error) {
@@ -354,7 +354,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Product routes
   app.get("/api/users/:userId/products", isAuthenticated, async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const userId = req.params.userId;
       const products = await storage.getProductsByUserId(userId);
       res.json(products);
     } catch (error) {
