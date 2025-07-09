@@ -35,7 +35,7 @@ export default function LoginPortal() {
                   <circle cx="8" cy="25" r="1" fill="white" opacity="0.6" />
                 </svg>
               </div>
-              <span className="ml-3 text-3xl font-bold text-gray-900">SparqAI</span>
+              <span className="ml-3 text-3xl font-bold text-gray-900">SparqOS</span>
               <Sparkles className="h-6 w-6 text-blue-600 ml-2" />
             </div>
 

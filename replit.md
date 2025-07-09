@@ -1,8 +1,8 @@
-# SparqAI - AI-Powered Sales Development Platform
+# SparqOS - AI-Powered Sales Development Platform
 
 ## Overview
 
-SparqAI is a modern full-stack web application built for AI-powered sales development and outreach automation. The platform enables users to create and manage automated sales campaigns, track leads, and leverage AI insights to optimize outreach performance.
+SparqOS is a modern full-stack web application built for AI-powered sales development and outreach automation. The platform enables users to create and manage automated sales campaigns, track leads, and leverage AI insights to optimize outreach performance.
 
 ## System Architecture
 
@@ -50,6 +50,8 @@ The application uses a relational database with the following main entities:
 
 ### Frontend Pages
 - **Dashboard**: Overview with metrics, charts, and activity feeds
+- **Company**: Displays company information from onboarding, showing how SparqOS uses it for campaigns
+- **Products**: Product catalog management for creating targeted, product-specific campaigns
 - **Campaigns**: Campaign management and creation interface
 - **Contacts**: Lead management and contact database
 - **Lead Scoring**: AI-powered lead prioritization with scoring analytics
@@ -109,6 +111,13 @@ The application uses a relational database with the following main entities:
 - **NODE_ENV**: Environment mode (development/production)
 
 ## Recent Changes
+- July 08, 2025: Platform Rebranding and Enhanced Features
+  - **Rebranded to SparqOS**: Changed platform name from SparqAI to SparqOS throughout the application
+  - **Added Company Section**: New dedicated page displaying all company information from onboarding
+  - **Added Products Section**: Product catalog management for creating targeted, product-specific campaigns
+  - **Enhanced Campaign Personalization**: SparqOS now uses company and product information to craft highly personalized campaigns
+  - **Improved Information Architecture**: Products and Company now appear as main navigation items for easy access
+
 - July 08, 2025: Onboarding Flow Simplification
   - **Removed Thank You Dialog**: Removed the post-setup thank you dialog that appeared after onboarding completion
   - **Direct Dashboard Redirect**: Users now redirect directly to dashboard after completing onboarding, with a toast notification

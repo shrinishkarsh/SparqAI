@@ -15,7 +15,7 @@ export default function Landing() {
               alt="SparqAI Logo" 
               className="w-12 h-12 object-contain rounded-lg bg-white p-1 shadow-sm"
             />
-            <span className="ml-3 text-2xl font-bold text-gray-900">SparqAI</span>
+            <span className="ml-3 text-2xl font-bold text-gray-900">SparqOS</span>
           </div>
           <Button onClick={() => window.location.href = '/api/login'} className="bg-blue-600 hover:bg-blue-700">
             Get Started

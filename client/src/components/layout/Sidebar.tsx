@@ -19,7 +19,9 @@ import {
   LogOut,
   FileText,
   Target,
-  Star
+  Star,
+  Building2,
+  Package
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -27,6 +29,8 @@ import { NotificationCenter } from "@/components/notifications/NotificationCente
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: ChartLine },
+  { name: "Company", href: "/company", icon: Building2 },
+  { name: "Products", href: "/products", icon: Package },
   { name: "Campaigns", href: "/campaigns", icon: Megaphone, badge: "3" },
   { name: "Contacts", href: "/contacts", icon: Users, count: "2,847" },
   { name: "Integrations", href: "/integrations", icon: LinkIcon },
@@ -48,7 +52,7 @@ export function Sidebar() {
             alt="SparqAI Logo" 
             className="w-12 h-12 object-contain rounded-lg bg-white p-1 shadow-sm"
           />
-          <span className="ml-3 text-xl font-bold text-gray-900">SparqAI</span>
+          <span className="ml-3 text-xl font-bold text-gray-900">SparqOS</span>
           <span className="ml-2 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
             Pro
           </span>

@@ -185,7 +185,7 @@ export default function Onboarding() {
       return company;
     },
     onSuccess: () => {
-      toast({ title: "Welcome to SparqAI!", description: "Your account setup is complete." });
+      toast({ title: "Welcome to SparqOS!", description: "Your account setup is complete." });
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
       setLocation('/');
     },
@@ -232,7 +232,7 @@ export default function Onboarding() {
             <div className="text-center">
               <Building2 className="h-12 w-12 text-blue-600 mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-2">Tell us about your company</h2>
-              <p className="text-gray-600">This helps us personalize your SparqAI experience</p>
+              <p className="text-gray-600">This helps us personalize your SparqOS experience</p>
             </div>
 
             <div className="space-y-4">
@@ -592,10 +592,10 @@ export default function Onboarding() {
                 <circle cx="8" cy="25" r="1" fill="white" opacity="0.6" />
               </svg>
             </div>
-            <span className="ml-3 text-2xl font-bold text-gray-900">SparqAI</span>
+            <span className="ml-3 text-2xl font-bold text-gray-900">SparqOS</span>
             <Sparkles className="h-5 w-5 text-blue-600 ml-2" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to SparqAI</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to SparqOS</h1>
           <p className="text-gray-600">Let's set up your account for maximum outreach success</p>
         </div>
 

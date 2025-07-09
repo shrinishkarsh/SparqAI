@@ -86,12 +86,12 @@ export default function Auth() {
             alt="SparqAI Logo" 
             className="w-16 h-16 object-contain rounded-lg bg-white p-2 shadow-md"
           />
-          <span className="ml-4 text-3xl font-bold text-gray-900">SparqAI</span>
+          <span className="ml-4 text-3xl font-bold text-gray-900">SparqOS</span>
         </div>
 
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Welcome to SparqAI</CardTitle>
+            <CardTitle className="text-2xl text-center">Welcome to SparqOS</CardTitle>
             <CardDescription className="text-center">
               AI-powered sales development platform
             </CardDescription>

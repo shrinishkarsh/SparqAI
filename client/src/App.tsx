@@ -15,6 +15,8 @@ import Onboarding from "@/pages/Onboarding";
 import Auth from "@/pages/Auth";
 import LoginPortal from "@/pages/LoginPortal";
 import Help from "@/pages/Help";
+import Company from "@/pages/Company";
+import Products from "@/pages/Products";
 
 import NotFound from "@/pages/not-found";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -49,6 +51,8 @@ function Router() {
       <div className="flex-1 flex flex-col ml-64">
         <Switch>
           <Route path="/" component={Dashboard} />
+          <Route path="/company" component={Company} />
+          <Route path="/products" component={Products} />
           <Route path="/campaigns" component={Campaigns} />
           <Route path="/contacts" component={Contacts} />
           <Route path="/integrations" component={Integrations} />
