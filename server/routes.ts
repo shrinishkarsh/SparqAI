@@ -366,22 +366,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/products", isAuthenticated, async (req, res) => {
     try {
-      console.log("Product creation request body:", req.body);
+      console.log("=== Product Creation Request ===");
+      console.log("Request received at /api/products");
+      console.log("Request body:", JSON.stringify(req.body, null, 2));
+      
       const validatedData = insertProductSchema.parse(req.body);
-      console.log("Validated product data:", validatedData);
+      console.log("Validated product data:", JSON.stringify(validatedData, null, 2));
+      
       const product = await storage.createProduct(validatedData);
-      console.log("Created product:", product);
+      console.log("Created product:", JSON.stringify(product, null, 2));
+      
       res.status(201).json(product);
     } catch (error) {
+      console.error("=== Product Creation Error ===");
       console.error("Error creating product:", error);
+      
       if (error instanceof z.ZodError) {
-        console.error("Validation errors:", error.errors);
+        console.error("Validation errors:", JSON.stringify(error.errors, null, 2));
         return res.status(400).json({ 
           message: "Validation failed", 
           errors: error.errors 
         });
       }
-      res.status(500).json({ message: "Failed to create product" });
+      
+      console.error("Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+      
+      res.status(500).json({ 
+        message: error.message || "Failed to create product",
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
     }
   });
 

@@ -81,6 +81,12 @@ export default function Products() {
     },
     onError: (error: any) => {
       console.error('Error creating product:', error);
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response,
+        data: error.data,
+        stack: error.stack
+      });
       toast({
         title: "Failed to create product",
         description: error.message || "Please try again later.",
