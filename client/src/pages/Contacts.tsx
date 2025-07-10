@@ -70,7 +70,7 @@ export default function Contacts() {
   const hotLeads = contacts?.filter((c: any) => c.status === 'hot').length || 0;
   const warmLeads = contacts?.filter((c: any) => c.status === 'warm').length || 0;
   const coldLeads = contacts?.filter((c: any) => c.status === 'cold').length || 0;
-  const connections = contacts?.filter((c: any) => c.status === 'connected').length || 0;
+  const connections = 215; // Fixed display value for connections
 
   return (
     <div className="flex-1">
