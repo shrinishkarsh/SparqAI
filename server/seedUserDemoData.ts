@@ -393,11 +393,17 @@ export async function seedUserDemoData(userId: string) {
     const firstNames = ["James", "Emma", "Robert", "Olivia", "William", "Sophia", "Benjamin", "Isabella", "Lucas", "Mia"];
     const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Martinez", "Wilson"];
     
+    // Create 47 regular contacts with proper status distribution
     for (let i = 0; i < 47; i++) {
       const campaignIndex = i % createdCampaigns.length;
       const firstName = firstNames[i % firstNames.length];
       const lastName = lastNames[i % lastNames.length];
-      const status = leadStatuses[i % 3];
+      
+      // Assign status to ensure we have 15 hot, 15 warm, 17 cold
+      let status;
+      if (i < 15) status = "hot";
+      else if (i < 30) status = "warm";
+      else status = "cold";
       
       const contact = {
         userId,
@@ -426,7 +432,40 @@ export async function seedUserDemoData(userId: string) {
       await storage.createContact(contact);
     }
 
-    console.log("Created 50 sample contacts representing 10,000+ lead database");
+    // Create 18 additional "connected" status contacts for a total of 68 connections
+    for (let i = 0; i < 18; i++) {
+      const campaignIndex = i % createdCampaigns.length;
+      const firstName = firstNames[i % firstNames.length];
+      const lastName = lastNames[(i + 5) % lastNames.length];
+      
+      const contact = {
+        userId,
+        campaignId: createdCampaigns[campaignIndex].id,
+        firstName,
+        lastName,
+        email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}.connected${i}@${lastName.toLowerCase()}corp.com`,
+        phone: `+1-${Math.floor(Math.random() * 900) + 100}-555-${String(i + 2000).padStart(4, '0')}`,
+        company: `${lastName} ${industries[i % industries.length]} Partners`,
+        jobTitle: jobTitles[i % jobTitles.length],
+        industry: industries[i % industries.length],
+        companySize: companySizes[i % companySizes.length],
+        linkedinUrl: `https://linkedin.com/in/${firstName.toLowerCase()}${lastName.toLowerCase()}connected${i}`,
+        status: "connected",
+        lastContactedAt: new Date(Date.now() - (i + 1) * 24 * 60 * 60 * 1000),
+        responseReceived: true,
+        meetingScheduled: true,
+        enrichmentData: {
+          companyRevenue: `$${Math.floor(Math.random() * 900 + 100)}M`,
+          recentNews: "Became a client last month",
+          painPoints: ["Solved with our solution"],
+          budget: "Active customer - $200K ARR"
+        }
+      };
+      
+      await storage.createContact(contact);
+    }
+
+    console.log("Created 68 sample contacts representing 10,000+ lead database with 68 connections");
 
     // Create recent activities
     const activities = [

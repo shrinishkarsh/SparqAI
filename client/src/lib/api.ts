@@ -136,8 +136,16 @@ export const api = {
   },
 
   // Dashboard
-  async getDashboardStats(userId: number) {
-    const response = await apiRequest("GET", `/api/dashboard/stats/${userId}`);
+  async getDashboardStats(userId: string) {
+    const response = await fetch(`/api/dashboard/stats/${userId}`, {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch dashboard stats: ${response.status}`);
+    }
     return response.json();
   },
 
