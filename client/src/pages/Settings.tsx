@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { Eye, EyeOff, CreditCard, Sparkles, Shield, Zap } from "lucide-react";
+import { Eye, EyeOff, CreditCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -171,84 +171,6 @@ export default function Settings() {
                     </Button>
                     <Button variant="outline">View Usage</Button>
                     <Button variant="outline">Download Invoice</Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Angel Zone Section */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-purple-600" />
-                  Angel Zone
-                </CardTitle>
-                <CardDescription>
-                  Special features and early access for our valued users
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="p-4 border border-purple-200 rounded-lg bg-purple-50">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-medium text-purple-900">Early Access Program</h3>
-                      <Badge className="bg-purple-600 text-white">BETA</Badge>
-                    </div>
-                    <p className="text-sm text-purple-700 mb-4">
-                      Get exclusive access to new features before they're released to the public
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="flex items-center gap-2">
-                        <Zap className="h-4 w-4 text-purple-600" />
-                        <span className="text-sm">AI Lead Scoring 2.0</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Zap className="h-4 w-4 text-purple-600" />
-                        <span className="text-sm">Multi-channel Sequences</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Zap className="h-4 w-4 text-purple-600" />
-                        <span className="text-sm">Advanced Analytics Dashboard</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Zap className="h-4 w-4 text-purple-600" />
-                        <span className="text-sm">AI Voice Cloning</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-4 border border-purple-200 rounded-lg bg-purple-50">
-                    <h3 className="font-medium text-purple-900 mb-2">Priority Support</h3>
-                    <p className="text-sm text-purple-700 mb-3">
-                      As an angel user, you get priority support with guaranteed response times
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <p className="text-sm font-medium">Response Time</p>
-                        <p className="text-xs text-purple-600">Under 2 hours</p>
-                      </div>
-                      <Button variant="outline" size="sm" className="border-purple-600 text-purple-600 hover:bg-purple-100">
-                        Contact Support
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="p-4 border border-purple-200 rounded-lg bg-purple-50">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-medium text-purple-900">Referral Program</h3>
-                        <p className="text-sm text-purple-700">Earn rewards for each successful referral</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold text-purple-600">$50</p>
-                        <p className="text-xs text-purple-600">per referral</p>
-                      </div>
-                    </div>
-                    <div className="mt-3">
-                      <Button className="w-full bg-purple-600 hover:bg-purple-700">
-                        Get Referral Link
-                      </Button>
-                    </div>
                   </div>
                 </div>
               </CardContent>
