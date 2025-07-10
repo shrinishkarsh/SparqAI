@@ -3,13 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 
 const data = [
-  { name: 'Mon', leads: 20, replies: 5, meetings: 1 },
-  { name: 'Tue', leads: 25, replies: 8, meetings: 2 },
-  { name: 'Wed', leads: 35, replies: 12, meetings: 3 },
-  { name: 'Thu', leads: 30, replies: 10, meetings: 2 },
-  { name: 'Fri', leads: 45, replies: 15, meetings: 4 },
-  { name: 'Sat', leads: 40, replies: 18, meetings: 6 },
-  { name: 'Sun', leads: 52, replies: 22, meetings: 8 },
+  { name: 'Mon', leads: 18, replies: 1, meetings: 4 },
+  { name: 'Tue', leads: 22, replies: 2, meetings: 5 },
+  { name: 'Wed', leads: 24, replies: 2, meetings: 6 },
+  { name: 'Thu', leads: 21, replies: 1, meetings: 7 },
+  { name: 'Fri', leads: 26, replies: 2, meetings: 8 },
+  { name: 'Sat', leads: 23, replies: 2, meetings: 5 },
+  { name: 'Sun', leads: 22, replies: 1, meetings: 6 },
 ];
 
 export function CampaignChart() {
