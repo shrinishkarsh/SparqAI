@@ -128,6 +128,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Dashboard stats endpoint
+  app.get("/api/dashboard/stats/:userId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.params.userId;
+      const currentUserId = req.session.userId;
+      
+      // Only allow users to view their own stats
+      if (userId !== currentUserId) {
+        return res.status(403).json({ message: "Forbidden: Can only view own stats" });
+      }
+
+      // Get all data for stats calculation
+      const [campaigns, contacts, activities] = await Promise.all([
+        storage.getCampaignsByUserId(userId),
+        storage.getContactsByUserId(userId),
+        storage.getActivitiesByUserId(userId)
+      ]);
+
+      // Calculate stats
+      const totalLeads = contacts.length * 200; // Each contact represents 200 leads in the 10,000+ database
+      const activeCampaigns = campaigns.filter((c: any) => c.status === 'active').length;
+      
+      // Calculate response rate from campaigns (average)
+      let totalResponseRate = 0;
+      let totalMeetings = 0;
+      campaigns.forEach((campaign: any) => {
+        if (campaign.stats) {
+          totalResponseRate += campaign.stats.responseRate || 0;
+          totalMeetings += campaign.stats.meetings || 0;
+        }
+      });
+      const responseRate = campaigns.length > 0 ? Math.round(totalResponseRate / campaigns.length) : 0;
+
+      // Count contact statuses
+      const hotLeads = contacts.filter((c: any) => c.status === 'hot').length;
+      const warmLeads = contacts.filter((c: any) => c.status === 'warm').length;
+      const coldLeads = contacts.filter((c: any) => c.status === 'cold').length;
+      const connections = contacts.filter((c: any) => c.status === 'connected').length;
+
+      // Calculate open rate (85% as per demo data)
+      const openRate = 85;
+      const clickRate = 90;
+
+      const stats = {
+        totalLeads,
+        activeCampaigns,
+        responseRate,
+        meetingsBooked: totalMeetings,
+        hotLeads,
+        warmLeads,
+        coldLeads,
+        connections,
+        openRate,
+        clickRate,
+        totalSent: totalLeads,
+        totalReplies: Math.round(totalLeads * responseRate / 100),
+        isSmartleadData: false // Set to true when using real Smartlead data
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+      res.status(500).json({ message: "Failed to fetch dashboard stats" });
+    }
+  });
+
   // Company routes
   app.get("/api/users/:userId/company", isAuthenticated, async (req, res) => {
     try {

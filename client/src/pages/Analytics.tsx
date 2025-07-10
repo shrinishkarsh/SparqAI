@@ -101,8 +101,8 @@ export default function Analytics() {
   });
 
   const { data: contacts = [] } = useQuery({
-    queryKey: ['/api/contacts', currentUser.id],
-    queryFn: () => api.getContactsByUserId(currentUser.id),
+    queryKey: [`/api/users/${user?.id}/contacts`],
+    enabled: !!user?.id,
   });
 
   // Animated counters
