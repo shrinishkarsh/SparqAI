@@ -10,6 +10,7 @@ import {
   insertContactSchema, insertActivitySchema, insertIntegrationSchema, insertProductSchema
 } from "@shared/schema";
 import { login, register, logout, isAuthenticated } from "./auth";
+import { seedUserDemoData } from "./seedUserDemoData";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -97,6 +98,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error completing setup:", error);
       res.status(500).json({ message: "Failed to complete setup" });
+    }
+  });
+
+  // Seed demo data for existing users
+  app.post("/api/users/:id/seed-demo", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.params.id;
+      const currentUserId = req.session.userId;
+      
+      // Only allow users to seed their own data
+      if (userId !== currentUserId) {
+        return res.status(403).json({ message: "Forbidden: Can only seed own data" });
+      }
+      
+      // Check if user already has campaigns
+      const existingCampaigns = await storage.getCampaignsByUserId(userId);
+      if (existingCampaigns.length > 0) {
+        return res.status(400).json({ message: "User already has campaign data" });
+      }
+      
+      // Seed demo data
+      await seedUserDemoData(userId);
+      
+      res.json({ message: "Demo data seeded successfully" });
+    } catch (error) {
+      console.error("Error seeding demo data:", error);
+      res.status(500).json({ message: "Failed to seed demo data" });
     }
   });
 

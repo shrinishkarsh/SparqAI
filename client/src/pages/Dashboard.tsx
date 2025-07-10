@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Header } from "@/components/layout/Header";
 import { MetricsCard } from "@/components/dashboard/MetricsCard";
@@ -12,21 +12,65 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Users, MessageSquare, Target, Calendar, ArrowUp } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [hasCheckedForData, setHasCheckedForData] = useState(false);
+  
+  const { data: campaigns } = useQuery({
+    queryKey: [`/api/users/${user?.id}/campaigns`],
+    enabled: !!user?.id,
+  });
+
+  const seedDemoMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/users/${user?.id}/seed-demo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to seed demo data");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Welcome to SparqOS!",
+        description: "We've added demo data to help you explore the platform.",
+      });
+      // Invalidate all queries to refresh data
+      queryClient.invalidateQueries();
+    },
+  });
+
+  // Check if user needs demo data
+  useEffect(() => {
+    if (user && campaigns !== undefined && !hasCheckedForData) {
+      setHasCheckedForData(true);
+      if (campaigns.length === 0) {
+        seedDemoMutation.mutate();
+      }
+    }
+  }, [user, campaigns, hasCheckedForData]);
+
   const { data: stats, isLoading } = useQuery({
     queryKey: [`/api/dashboard/stats/${user?.id}`],
     queryFn: () => api.getDashboardStats(user?.id || ''),
     enabled: !!user?.id,
   });
 
-  if (isLoading) {
+  if (isLoading || seedDemoMutation.isPending) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <p className="mt-4 text-gray-600">
+            {seedDemoMutation.isPending ? "Setting up your dashboard..." : "Loading dashboard..."}
+          </p>
         </div>
       </div>
     );
