@@ -90,23 +90,10 @@ export default function Settings() {
       <div className="mx-auto max-w-5xl">
         <div className="mb-6">
           <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-          <p className="text-gray-600">Manage your integrations and account settings</p>
+          <p className="text-gray-600">Manage your account preferences and configuration</p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="integrations" className="flex items-center gap-2">
-              <Link className="h-4 w-4" />
-              Integrations
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <SettingsIcon className="h-4 w-4" />
-              Settings
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Integrations Tab */}
-          <TabsContent value="integrations" className="space-y-6">
+        <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold mb-2">Connect Your Tools</h2>
               <p className="text-gray-600 mb-6">
@@ -244,10 +231,7 @@ export default function Settings() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          {/* Settings Tab */}
-          <TabsContent value="settings" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Account Settings</CardTitle>
@@ -429,8 +413,7 @@ export default function Settings() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+        </div>
       </div>
     </div>
   );
