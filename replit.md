@@ -111,6 +111,16 @@ The application uses a relational database with the following main entities:
 - **NODE_ENV**: Environment mode (development/production)
 
 ## Recent Changes
+- July 09, 2025: Automatic Demo Data for New Users
+  - **Added Demo Data Seeding**: New users now receive comprehensive demo data upon registration
+  - **Successful Campaign Examples**: 3 campaigns with impressive metrics (20-30% response rates, 87-234 meetings booked)
+  - **High-Value Products**: 3 products showcasing different pricing models with strong revenue numbers ($307K+ total monthly revenue)
+  - **Quality Leads**: 5 pre-qualified contacts in various stages (hot, warm) with detailed enrichment data
+  - **Integrated Services**: Pre-connected LinkedIn, Email, and CRM integrations showing active usage
+  - **Realistic Business Scenario**: Complete company profile for "TechVision Solutions" with enterprise positioning
+  - **Immediate Value Demonstration**: Users can explore a fully functional platform immediately after registration
+
+## Recent Changes
 - July 08, 2025: Platform Rebranding and Enhanced Features
   - **Rebranded to SparqOS**: Changed platform name from SparqAI to SparqOS throughout the application
   - **Added Company Section**: New dedicated page displaying all company information from onboarding

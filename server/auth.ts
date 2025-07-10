@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { storage } from "./storage";
 import type { Request, Response, NextFunction } from "express";
+import { seedUserDemoData } from "./seedUserDemoData";
 
 // Simple JWT-like session management
 const sessions = new Map<string, string>();
@@ -91,6 +92,10 @@ export async function register(req: Request, res: Response) {
     sessions.set(token, user.id);
     
     req.session.userId = user.id;
+    
+    // Seed demo data for new user
+    await seedUserDemoData(user.id);
+    
     req.session.save((err) => {
       if (err) {
         console.error("Session save error:", err);
