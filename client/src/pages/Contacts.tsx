@@ -11,16 +11,19 @@ import { Plus, Search, Filter, Download, Flame, Thermometer, Snowflake, Handshak
 import { api } from "@/lib/api";
 import { formatDistanceToNow } from "date-fns";
 import { AddContactModal } from "@/components/contacts/AddContactModal";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Contacts() {
+  const { user } = useAuth();
+  
   const { data: contacts, isLoading } = useQuery({
-    queryKey: ["/api/contacts/user/1"],
-    queryFn: () => api.getContactsByUserId(1),
+    queryKey: [`/api/users/${user?.id}/contacts`],
+    enabled: !!user?.id,
   });
 
   const { data: campaigns } = useQuery({
-    queryKey: ["/api/campaigns/user/1"],
-    queryFn: () => api.getCampaignsByUserId(1),
+    queryKey: [`/api/users/${user?.id}/campaigns`],
+    enabled: !!user?.id,
   });
 
   if (isLoading) {

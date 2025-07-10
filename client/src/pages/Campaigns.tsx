@@ -11,13 +11,15 @@ import { Plus, Search, Filter, Play, Pause, CheckCircle, Circle, Download, Workf
 import { api } from "@/lib/api";
 import { CreateCampaignModal } from "@/components/campaigns/CreateCampaignModal";
 import { SequencesPanel } from "@/components/sequences/SequencesPanel";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Campaigns() {
   const [activeTab, setActiveTab] = useState("campaigns");
+  const { user } = useAuth();
   
   const { data: campaigns, isLoading } = useQuery({
-    queryKey: ["/api/campaigns/user/1"],
-    queryFn: () => api.getCampaignsByUserId(1),
+    queryKey: [`/api/users/${user?.id}/campaigns`],
+    enabled: !!user?.id,
   });
 
   // Fetch real Smartlead campaigns

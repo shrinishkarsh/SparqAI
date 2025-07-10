@@ -23,8 +23,7 @@ import {
 } from "lucide-react";
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { api } from "@/lib/api";
-
-const currentUser = { id: 1, email: "alex@company.com", firstName: "Alex", lastName: "Johnson" };
+import { useAuth } from "@/hooks/useAuth";
 
 // Animation hook for counting numbers
 const useCountAnimation = (end: number, duration: number = 2000) => {
@@ -86,17 +85,19 @@ const recentActivityData = [
 export default function Analytics() {
   const [timeRange, setTimeRange] = useState("30d");
   const [activeTab, setActiveTab] = useState("overview");
+  const { user } = useAuth();
 
   // Fetch real data
   const { data: dashboardStats } = useQuery({
-    queryKey: ['/api/dashboard/stats', currentUser.id],
-    queryFn: () => api.getDashboardStats(currentUser.id),
+    queryKey: [`/api/dashboard/stats/${user?.id}`],
+    queryFn: () => api.getDashboardStats(user?.id || ''),
+    enabled: !!user?.id,
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   const { data: campaigns = [] } = useQuery({
-    queryKey: ['/api/campaigns', currentUser.id],
-    queryFn: () => api.getCampaignsByUserId(currentUser.id),
+    queryKey: [`/api/users/${user?.id}/campaigns`],
+    enabled: !!user?.id,
   });
 
   const { data: contacts = [] } = useQuery({
