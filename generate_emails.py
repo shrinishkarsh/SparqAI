@@ -178,9 +178,9 @@ Hi {{first_name}},
 
 {{opening}}
 
-We put together a free Revenue Leakage Audit specifically for multi location fitness businesses. It is a short written breakdown we put together for you that maps where leads are dropping off across your locations and what it is likely costing each month.
+We put together a free Revenue Leakage Audit specifically for multi location fitness businesses. It is a short written breakdown that maps where leads are dropping off across your locations and what it is likely costing each month.
 
-No call needed. No pitch. We just share it with you and you decide what to do with it.
+There is no call needed and we are not pitching anything. We just share it with you and you decide what to do with it.
 
 The one thing we look at specifically is how fast and consistently new inquiries across your {{branch_count}} locations are being followed up. Leads that are not contacted within the first hour are seven times less likely to convert and at {{branch_count}} locations that window closes a lot.
 
@@ -199,7 +199,7 @@ A_E2_SUBJECTS = [
 A_E2_BODY = """\
 Hi {{first_name}},
 
-Following up on the audit offer.
+I wanted to follow up on the audit offer we sent through.
 
 Here is what we almost always find in multi location fitness businesses at your stage. Leads come in through different channels at different locations. Someone manually checks and responds when they get to it. A portion of those prospects have already signed somewhere else by then.
 
@@ -207,7 +207,7 @@ At {{branch_count}} locations with no centralised system that window closes cons
 
 We fixed this for a gym chain by building a single lead inbox with auto sequenced follow ups by location. Conversion on new inquiries went up in the first 30 days.
 
-The audit is free and we send it to you in writing. Still want it?
+The audit is free and we send it to you in writing. Let us know if you still want it sent through.
 
 [Sender Name]
 Think Macro\
@@ -222,17 +222,15 @@ A_E3_SUBJECTS = [
 A_E3_BODY = """\
 Hi {{first_name}},
 
-One more and I will leave you alone.
+This is the last one from me and then I will leave you alone.
 
-We recently built an internal lead management system for a multi location fitness business. The brief was simple. No lead should ever fall through the cracks again.
+We recently built an internal lead management system for a multi location fitness business. The brief was simple and the goal was that no lead should ever fall through the cracks again.
 
 We built a central lead intake that pulled from all channels and all locations. We set up auto follow up sequences that triggered within minutes of each inquiry. We gave the owner a single dashboard showing lead volume, response time and conversion by branch.
 
 The ops team stopped managing leads manually. The owner stopped guessing which locations were underperforming on new sign ups.
 
-If {{company}} is still running lead follow up manually across your {{branch_count}} locations there is likely a version of this worth building for you.
-
-Interested in seeing the full breakdown?
+If {{company}} is still running lead follow up manually across your {{branch_count}} locations there is likely a version of this worth building for you. Let us know if you want us to send you the full breakdown.
 
 [Sender Name]
 Think Macro\
@@ -254,7 +252,7 @@ Hi {{first_name}},
 
 We put together a free Revenue Leakage Audit specifically for multi location fitness businesses. It is a short written breakdown we put together for you that maps exactly where recurring revenue is slipping through and what it is likely costing each month.
 
-No call needed. No pitch. We just share it with you and you decide what to do with it.
+There is no call needed and we are not pitching anything. We just share it with you and you decide what to do with it.
 
 The thing we look at specifically is how many members are lapsing each month across your {{branch_count}} locations without any automated system catching them. In fitness most churn is not intentional. Members just did not get nudged at the right moment.
 
@@ -273,17 +271,17 @@ B_E2_SUBJECTS = [
 B_E2_BODY = """\
 Hi {{first_name}},
 
-Following up on the audit offer.
+I wanted to follow up on the audit offer we sent through.
 
 Here is a simple way to think about what it usually surfaces. If {{company}} has 500 active members across locations and just 5 percent lapse quietly each month without any system catching them that is 25 members a month and 300 a year gone without a nudge.
 
 At even 80 dollars a month average membership that is 24000 dollars in annual recurring revenue leaking out with no visibility.
 
-The fix is not complicated. A renewal tracking system that flags upcoming lapses, triggers personalised outreach automatically and gives a real time retention dashboard by location.
+The fix is a renewal tracking system that flags upcoming lapses, triggers personalised outreach automatically and gives a real time retention dashboard by location.
 
 We built exactly this for a multi location fitness business. They recovered renewal revenue in the first quarter that covered the cost of the entire build.
 
-Still want the free audit sent through?
+Let us know if you still want the free audit sent through.
 
 [Sender Name]
 Think Macro\
@@ -298,7 +296,7 @@ B_E3_SUBJECTS = [
 B_E3_BODY = """\
 Hi {{first_name}},
 
-Last one from me.
+This is the last one from me.
 
 We built a member renewal and retention system for a fitness business losing members quietly across multiple locations. No one had visibility into who was at risk until they had already left.
 
@@ -306,9 +304,7 @@ We built a renewal calendar synced across all branches. We set up automated outr
 
 The team stopped chasing renewals manually. The owner had full visibility across every location for the first time.
 
-If {{company}} is managing renewals manually across {{branch_count}} locations right now there is a version of this worth building.
-
-Want us to send you the full breakdown?
+If {{company}} is managing renewals manually across {{branch_count}} locations right now there is a version of this worth building. Let us know if you want us to send you the full breakdown.
 
 [Sender Name]
 Think Macro\
@@ -330,7 +326,7 @@ Hi {{first_name}},
 
 We put together a free Revenue Leakage Audit specifically for multi location fitness businesses. It is a short written breakdown we put together for you that maps where manual processes are costing you time and revenue across branches and what it is likely adding up to each month.
 
-No call needed. No pitch. We just share it with you and you decide what to do with it.
+There is no call needed and we are not pitching anything. We just share it with you and you decide what to do with it.
 
 The things we look at are scheduling gaps across locations, reporting that still requires manual consolidation and blind spots in branch performance that only show up weeks after the fact.
 
@@ -349,7 +345,7 @@ C_E2_SUBJECTS = [
 C_E2_BODY = """\
 Hi {{first_name}},
 
-Following up on the audit offer.
+I wanted to follow up on the audit offer we sent through.
 
 Here is the pattern we see in most multi location fitness businesses at your stage. Trainer and class schedules are managed location by location manually so gaps and double bookings happen and staff friction builds. Each location reports separately so you are consolidating manually or not at all. And performance problems at a branch only surface weeks after the fact not in real time.
 
@@ -357,7 +353,7 @@ None of this is a people problem. It is a systems problem and it has a straightf
 
 We built an internal ops system for a fitness chain dealing with exactly this. Scheduling, branch dashboards and automated reporting all in one place. The owner went from spending half a day on ops to 30 minutes.
 
-The audit is free and we send it in writing. Still want it?
+The audit is free and we send it in writing. Let us know if you still want it sent through.
 
 [Sender Name]
 Think Macro\
@@ -372,7 +368,7 @@ C_E3_SUBJECTS = [
 C_E3_BODY = """\
 Hi {{first_name}},
 
-Last one from me.
+This is the last one from me.
 
 We built an internal operations system for a multi location fitness business that had outgrown its manual processes. They had the locations, the members and the trainers but no central system holding it all together.
 
@@ -380,9 +376,7 @@ We built a trainer and class scheduling system across all branches. We set up a 
 
 The ops overhead dropped significantly. The owner had real time visibility across every location for the first time.
 
-If {{company}} is running anything manually across {{branch_count}} locations right now this is worth a conversation.
-
-Want us to send you the full breakdown?
+If {{company}} is running anything manually across {{branch_count}} locations right now this is worth a conversation. Let us know if you want us to send you the full breakdown.
 
 [Sender Name]
 Think Macro\
