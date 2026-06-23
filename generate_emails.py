@@ -178,13 +178,11 @@ Hi {{first_name}},
 
 {{opening}}
 
-We put together a free Revenue Leakage Audit specifically for multi location fitness businesses. It is a short written breakdown that maps where leads are dropping off across your locations and what it is likely costing each month.
+The thing we find almost every time across multi location fitness businesses is that leads are coming in from different channels at different locations and the follow up is manual and slow. Leads not contacted within the first hour are seven times less likely to convert and at {{branch_count}} locations that window is closing constantly.
 
-There is no call needed and we are not pitching anything. We just share it with you and you decide what to do with it.
+We built a lead management system for a gym chain with this exact problem. A single centralised inbox, auto sequenced follow ups by location and a dashboard showing response time and conversion by branch. Conversion on new inquiries went up in the first 30 days.
 
-The one thing we look at specifically is how fast and consistently new inquiries across your {{branch_count}} locations are being followed up. Leads that are not contacted within the first hour are seven times less likely to convert and at {{branch_count}} locations that window closes a lot.
-
-If you want us to put one together for {{company}} just say yes and we will get started.
+We have put together a Revenue Leakage Audit for {{company}} already. It is a short written breakdown that maps where new inquiries are likely dropping off across your locations and what it is probably costing each month. No call needed and there is nothing to buy. Just reply and we will send it straight through.
 
 [Sender Name]
 Think Macro\
@@ -250,13 +248,11 @@ Hi {{first_name}},
 
 {{opening}}
 
-We put together a free Revenue Leakage Audit specifically for multi location fitness businesses. It is a short written breakdown we put together for you that maps exactly where recurring revenue is slipping through and what it is likely costing each month.
+The thing we find almost every time across multi location fitness businesses is that a portion of recurring revenue is lapsing quietly every month with no system catching it. In fitness most churn is not intentional. Members leave because no one reached out at the right moment.
 
-There is no call needed and we are not pitching anything. We just share it with you and you decide what to do with it.
+We built a renewal and retention system for a fitness chain dealing with exactly this. Automated outreach triggered before each lapse date, a win back sequence for members who had already gone and a retention dashboard across all locations. They recovered more in renewal revenue in the first quarter than the build cost them.
 
-The thing we look at specifically is how many members are lapsing each month across your {{branch_count}} locations without any automated system catching them. In fitness most churn is not intentional. Members just did not get nudged at the right moment.
-
-If you want us to put one together for {{company}} just say yes and we will get started.
+We have put together a Revenue Leakage Audit for {{company}} already. It is a short written breakdown that maps where membership revenue is likely slipping across your {{branch_count}} locations and what it is probably adding up to each month. No call needed and there is nothing to buy. Just reply and we will send it straight through.
 
 [Sender Name]
 Think Macro\
@@ -324,13 +320,11 @@ Hi {{first_name}},
 
 {{opening}}
 
-We put together a free Revenue Leakage Audit specifically for multi location fitness businesses. It is a short written breakdown we put together for you that maps where manual processes are costing you time and revenue across branches and what it is likely adding up to each month.
+The thing we find almost every time across multi location fitness businesses is that the tools that worked at two locations start creating real friction at five, ten, fifteen. Scheduling done manually across branches, reporting that has to be consolidated by hand, and performance problems that only surface weeks after the fact.
 
-There is no call needed and we are not pitching anything. We just share it with you and you decide what to do with it.
+We built an internal operations system for a fitness chain at exactly this stage. Centralised scheduling, a live branch performance dashboard and automated reporting sent straight to the owner. They went from spending half a day on ops to 30 minutes.
 
-The things we look at are scheduling gaps across locations, reporting that still requires manual consolidation and blind spots in branch performance that only show up weeks after the fact.
-
-If you want us to put one together for {{company}} just say yes and we will get started.
+We have put together a Revenue Leakage Audit for {{company}} already. It is a short written breakdown that maps where manual operations are likely costing you time and revenue across your {{branch_count}} locations and what it is probably adding up to each month. No call needed and there is nothing to buy. Just reply and we will send it straight through.
 
 [Sender Name]
 Think Macro\
