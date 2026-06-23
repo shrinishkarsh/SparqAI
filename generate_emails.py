@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """
 Generate 3 fully personalized emails per lead for all 1,225 qualified leads.
-- Varied personalized openings based on company data
-- Email 1 always leads with a free offer (Revenue Leakage Audit) as the hook
-Output: campaign2_emails_ready.csv
+Rules:
+  - No hyphens, no em dashes, free flowing prose throughout
+  - Email 1: free offer hook (Revenue Leakage Audit), CTA is just "say yes"
+  - Email 2: pain story and follow up
+  - Email 3: case study proof
 """
 
 import csv
@@ -14,18 +16,18 @@ INPUT  = "/home/user/SparqAI/campaign2_outbound_ready.csv"
 OUTPUT = "/home/user/SparqAI/campaign2_emails_ready.csv"
 
 
-# ── PERSONALIZED OPENING GENERATOR ───────────────────────────────────────────
+# ── HELPERS ───────────────────────────────────────────────────────────────────
+
+def seed(row):
+    return int(hashlib.md5(row["email"].encode()).hexdigest(), 16)
 
 def extract_desc_hook(desc):
-    """Pull a usable fact from company description."""
     desc = desc.strip()
     if not desc or desc == "...":
         return ""
-    # Find first sentence that contains a useful signal
     sentences = re.split(r'(?<=[.!?])\s+', desc)
     for s in sentences[:3]:
         s = s.strip()
-        # Skip if too short or too generic
         if len(s) < 30 or len(s) > 160:
             continue
         bad = ["http", "www.", "©", "follow us", "click", "visit", "call us", "contact"]
@@ -35,143 +37,139 @@ def extract_desc_hook(desc):
     return ""
 
 
-def seed(row):
-    """Deterministic seed per lead so openings are stable across runs."""
-    return int(hashlib.md5(row["email"].encode()).hexdigest(), 16)
-
+# ── PERSONALIZED OPENING GENERATOR ───────────────────────────────────────────
 
 def generate_opening(row):
-    first       = row["first_name"]
-    company     = row["company"]
-    company_type = row["company_type"]           # gym chain / pilates chain / yoga chain / fitness studio / wellness center
-    branches    = row["branch_count"]
-    emp         = row["employee_count"]
-    franchise   = row["franchise_or_owned"]      # Franchise / Privately Owned / etc.
-    tech        = row["tech_stack"]
-    ig          = row["instagram_handle"]
-    ig_followers= row["instagram_followers"]
-    pain        = row["primary_pain"]
-    desc        = row["company_description"]
-    city        = ""  # not in outbound sheet directly, pull from opening if available
+    company      = row["company"]
+    company_type = row["company_type"]
+    branches     = row["branch_count"]
+    emp          = row["employee_count"]
+    franchise    = row["franchise_or_owned"]
+    tech         = row["tech_stack"]
+    ig           = row["instagram_handle"]
+    ig_followers = row["instagram_followers"]
+    desc         = row["company_description"]
 
     b = int(branches)
     e = int(emp) if emp else 0
     desc_hook = extract_desc_hook(desc)
 
-    # ── Build a pool of opening options based on what data is available ───────
     options = []
 
-    # --- Branch-count specific ---
+    # Branch count
     if b >= 20:
         options += [
-            f"Came across {company} — running {b}+ locations is no small thing operationally.",
+            f"Came across {company} and running {b} locations is no small thing operationally.",
             f"{b} locations is a serious footprint. Most {company_type}s at that scale have outgrown their manual systems by now.",
-            f"Noticed {company} has scaled to {b}+ locations — at that size, the operational overhead tends to become its own challenge.",
+            f"Noticed {company} has scaled to {b} locations and at that size the operational overhead tends to become its own full time challenge.",
         ]
     elif b >= 10:
         options += [
-            f"Noticed {company} operating across {b} locations — that's the stage where operations either scale with you or start slowing you down.",
-            f"{b} locations puts {company} at the point where most fitness businesses need better internal systems, not more people.",
-            f"Came across {company} — {b} locations is exactly the scale where centralised ops tools start paying for themselves.",
+            f"Noticed {company} operating across {b} locations and that is the stage where operations either scale with you or start slowing you down.",
+            f"{b} locations puts {company} at the point where most fitness businesses need better internal systems not more people.",
+            f"Came across {company} and {b} locations is exactly the scale where centralised ops tools start paying for themselves.",
         ]
     elif b >= 5:
         options += [
-            f"Noticed {company} running {b} locations — growing multi-location {company_type}s at your stage tend to hit the same operational friction points.",
-            f"Came across {company} — at {b} locations, the things that worked at 2 tend to start breaking down.",
+            f"Noticed {company} running {b} locations and growing {company_type}s at your stage tend to hit the same operational friction points.",
+            f"Came across {company} and at {b} locations the things that worked at 2 tend to start breaking down.",
             f"{b} locations is a meaningful operation. Most {company_type}s at this stage are still running things manually across branches.",
         ]
     else:
         options += [
-            f"Came across {company} — even at {b} locations, the gap between how operations run today and how they could run is usually significant.",
-            f"Noticed {company} — growing {company_type}s at your stage tend to hit some common operational friction points early.",
-            f"Came across {company} and thought this might be timely — multi-location {company_type}s often underestimate how much revenue slips through operationally.",
+            f"Came across {company} and even at {b} locations the gap between how operations run today and how they could run is usually bigger than expected.",
+            f"Noticed {company} and growing {company_type}s at your stage tend to hit some common operational friction points early.",
+            f"Came across {company} and multi location {company_type}s often underestimate how much revenue slips through the cracks operationally.",
         ]
 
-    # --- Company type specific ---
+    # Company type
     if company_type == "pilates chain":
         options += [
-            f"Noticed {company} — multi-location pilates businesses have some of the highest scheduling and renewal complexity in fitness.",
-            f"Came across {company} — pilates chains at your scale typically deal with a lot of manual scheduling and membership tracking across studios.",
+            f"Noticed {company} and multi location pilates businesses have some of the highest scheduling and renewal complexity in the fitness space.",
+            f"Came across {company} and pilates chains at your scale typically deal with a lot of manual scheduling and membership tracking across studios.",
         ]
     elif company_type == "yoga chain":
         options += [
-            f"Came across {company} — yoga studios with multiple locations tend to run a surprising amount of their operations manually.",
-            f"Noticed {company} — multi-location yoga businesses often have strong brand but under-systemised operations behind the scenes.",
+            f"Came across {company} and yoga studios with multiple locations tend to run a surprising amount of their operations manually.",
+            f"Noticed {company} and multi location yoga businesses often have strong brand but under systemised operations behind the scenes.",
         ]
     elif company_type == "gym chain":
         options += [
-            f"Noticed {company} — gym chains at your scale are often managing more operational complexity than their systems were built for.",
-            f"Came across {company} — most gym chains we work with at your stage are dealing with the same gap: locations outpacing the internal tools.",
+            f"Noticed {company} and gym chains at your scale are often managing more operational complexity than their systems were built for.",
+            f"Came across {company} and most gym chains we work with at your stage are dealing with the same thing where locations grow faster than the internal tools.",
         ]
     elif company_type == "wellness center":
         options += [
-            f"Came across {company} — wellness centers with multiple locations tend to have a lot of moving parts that aren't talking to each other.",
-            f"Noticed {company} — multi-location wellness businesses usually have the hardest time getting visibility across branches.",
+            f"Came across {company} and wellness centers with multiple locations tend to have a lot of moving parts that are not talking to each other.",
+            f"Noticed {company} and multi location wellness businesses usually have the hardest time getting visibility across branches.",
         ]
-    else:  # fitness studio
+    else:
         options += [
-            f"Came across {company} — boutique fitness studios at your stage often have great product but manual operations holding back growth.",
-            f"Noticed {company} — multi-location fitness studios tend to outgrow their tools faster than most businesses realise.",
+            f"Came across {company} and boutique fitness studios at your stage often have great product but manual operations holding back growth.",
+            f"Noticed {company} and multi location fitness studios tend to outgrow their tools faster than most businesses realise.",
         ]
 
-    # --- Franchise specific ---
+    # Franchise
     if "franchise" in franchise.lower():
         options += [
-            f"Noticed {company} — franchise operations at your scale have unique visibility and reporting challenges across locations.",
-            f"Came across {company} — franchise fitness businesses tend to have the most to gain from centralised ops systems across locations.",
+            f"Noticed {company} and franchise operations at your scale have unique visibility and reporting challenges across locations.",
+            f"Came across {company} and franchise fitness businesses tend to have the most to gain from centralised ops systems.",
         ]
 
-    # --- Tech stack signal ---
+    # Tech stack
     if tech and "manual" not in tech.lower() and "unknown" not in tech.lower():
         tools = tech.split(",")[0].strip()
         options += [
-            f"Noticed {company} is using {tools} — businesses at your stage often find their software stack covers some gaps but leaves others wide open.",
-            f"Came across {company} — even with {tools} in place, most multi-location operators still have significant manual ops gaps across branches.",
+            f"Noticed {company} is using {tools} and businesses at your stage often find their software stack covers some gaps but leaves others wide open.",
+            f"Came across {company} and even with {tools} in place most multi location operators still carry significant manual ops gaps across branches.",
         ]
 
-    # --- Instagram signal ---
+    # Instagram
     if ig and ig_followers and "N/A" not in ig_followers:
         options += [
-            f"Came across {company} on Instagram ({ig}) — clearly doing a great job building the brand. Curious if the operations side is keeping pace with the growth.",
+            f"Came across {company} on Instagram ({ig}) and you are clearly doing a great job building the brand. Thought it was worth reaching out about the operations side.",
         ]
 
-    # --- Description hook ---
+    # Description hook — only use complete sentences
     if desc_hook:
-        # Only use if it contains a usable fact
-        if any(w in desc_hook.lower() for w in ["founded", "since", "locations", "year", "open", "members", "clients", "programs", "services"]):
-            options += [
-                f"Read a bit about {company} — \"{desc_hook[:100].rstrip('.')}\" — that kind of growth usually comes with real operational complexity behind the scenes.",
-            ]
+        if any(w in desc_hook.lower() for w in ["founded", "since", "location", "year", "open", "member", "client", "program", "service"]):
+            # Only use if desc_hook is a complete sentence (ends in period or is short enough)
+            clean_hook = desc_hook.strip().rstrip(",")
+            if not clean_hook.endswith("."):
+                clean_hook = clean_hook + "."
+            if len(clean_hook) <= 160:
+                options += [
+                    f"Read a bit about {company}. {clean_hook} That kind of growth usually comes with real operational complexity behind the scenes.",
+                ]
 
-    # --- Employee count ---
+    # Employee count
     if e >= 100:
         options += [
-            f"Noticed {company} has a team of {e}+ — at that headcount across multiple locations, manual ops coordination gets expensive fast.",
+            f"Noticed {company} has a team of {e} people and at that headcount across multiple locations manual ops coordination gets expensive fast.",
         ]
 
-    # Fallback if pool is thin
+    # Fallback
     if not options:
         options = [
-            f"Came across {company} — thought this might be relevant given where you are in the growth curve.",
-            f"Noticed {company} — wanted to reach out because we work specifically with multi-location {company_type}s on operational complexity.",
+            f"Came across {company} and thought this might be relevant given where you are in the growth curve.",
+            f"Noticed {company} and wanted to reach out because we work specifically with multi location {company_type}s on operational complexity.",
         ]
 
-    # Pick deterministically so it's stable
     idx = seed(row) % len(options)
     return options[idx]
 
 
 # ── TEMPLATES ─────────────────────────────────────────────────────────────────
-# Email 1 across all variants leads with the FREE OFFER as the hook.
-# Email 2 builds the pain/story.
-# Email 3 delivers the case study proof.
+# No hyphens. No em dashes. Free flowing prose. Bullets replaced with sentences.
+# Email 1 CTA: just say yes, no call ask.
+# ──────────────────────────────────────────────────────────────────────────────
 
 
-# ── VARIANT A — LEAD LEAKAGE ──────────────────────────────────────────────────
+# VARIANT A  —  LEAD LEAKAGE
 
 A_E1_SUBJECTS = [
-    "free audit — {{company}}",
-    "{{first_name}}, quick question on leads",
+    "free audit for {{company}}",
+    "{{first_name}} quick question on leads",
     "where {{company}} might be losing new members",
 ]
 
@@ -180,21 +178,21 @@ Hi {{first_name}},
 
 {{opening}}
 
-We're offering a free Revenue Leakage Audit for multi-location fitness businesses — a 20-minute call where we walk through your current lead flow across locations and show you exactly where inquiries are dropping off.
+We put together a free Revenue Leakage Audit specifically for multi location fitness businesses. It is a short written breakdown we put together for you that maps where leads are dropping off across your locations and what it is likely costing each month.
 
-No pitch. Just a diagnostic. Most operators we do this with find at least one gap they hadn't thought to look at.
+No call needed. No pitch. We just share it with you and you decide what to do with it.
 
-The specific thing we look for: how fast and consistently new leads across your {{branch_count}} locations are being followed up — because leads that aren't contacted within the first hour are 7x less likely to convert.
+The one thing we look at specifically is how fast and consistently new inquiries across your {{branch_count}} locations are being followed up. Leads that are not contacted within the first hour are seven times less likely to convert and at {{branch_count}} locations that window closes a lot.
 
-Worth 20 minutes to find out where {{company}} stands?
+If you want us to put one together for {{company}} just say yes and we will get started.
 
 [Sender Name]
 Think Macro\
 """
 
 A_E2_SUBJECTS = [
-    "the 1-hour rule in fitness",
-    "re: {{company}}",
+    "the one hour rule in fitness",
+    "re {{company}}",
     "what we see at {{branch_count}} locations",
 ]
 
@@ -203,54 +201,49 @@ Hi {{first_name}},
 
 Following up on the audit offer.
 
-Here's what we almost always find in multi-location fitness businesses at your stage:
+Here is what we almost always find in multi location fitness businesses at your stage. Leads come in through different channels at different locations. Someone manually checks and responds when they get to it. A portion of those prospects have already signed somewhere else by then.
 
-Leads come in through different channels — walk-ins, Instagram DMs, website forms, referrals — at different locations. Someone manually checks and responds when they get to it. A chunk of those prospects have already signed somewhere else by then.
+At {{branch_count}} locations with no centralised system that window closes constantly and no one has visibility into how much it is costing.
 
-At {{branch_count}} locations with no centralised system, that window closes constantly and no one has visibility into how much it's costing.
+We fixed this for a gym chain by building a single lead inbox with auto sequenced follow ups by location. Conversion on new inquiries went up in the first 30 days.
 
-We fixed this for a gym chain by building a single lead inbox with auto-sequenced follow-ups by location. Conversion on new inquiries went up in the first 30 days.
-
-The audit takes 20 minutes and costs nothing. Still worth doing?
+The audit is free and we send it to you in writing. Still want it?
 
 [Sender Name]
 Think Macro\
 """
 
 A_E3_SUBJECTS = [
-    "what the build looked like — {{company}}",
-    "{{first_name}}, one specific example",
+    "what we built for a similar business",
+    "{{first_name}} one specific example",
     "the lead system we built",
 ]
 
 A_E3_BODY = """\
 Hi {{first_name}},
 
-One more and I'll leave you alone.
+One more and I will leave you alone.
 
-We recently built an internal lead management system for a multi-location fitness business — the brief was simple: no lead should ever fall through the cracks again.
+We recently built an internal lead management system for a multi location fitness business. The brief was simple. No lead should ever fall through the cracks again.
 
-What we built:
-- Central lead intake from all channels and all locations
-- Auto follow-up sequences triggered within minutes of inquiry
-- Owner dashboard showing lead volume, response time, and conversion by branch
+We built a central lead intake that pulled from all channels and all locations. We set up auto follow up sequences that triggered within minutes of each inquiry. We gave the owner a single dashboard showing lead volume, response time and conversion by branch.
 
-The ops team stopped managing leads manually. The owner stopped guessing which locations were underperforming on new sign-ups.
+The ops team stopped managing leads manually. The owner stopped guessing which locations were underperforming on new sign ups.
 
-If {{company}} is still running lead follow-up manually across your {{branch_count}} locations — spreadsheets, shared inboxes, WhatsApp — there's likely a version of this worth a conversation.
+If {{company}} is still running lead follow up manually across your {{branch_count}} locations there is likely a version of this worth building for you.
 
-Would it be worth a quick call?
+Interested in seeing the full breakdown?
 
 [Sender Name]
 Think Macro\
 """
 
 
-# ── VARIANT B — RENEWAL & RETENTION ──────────────────────────────────────────
+# VARIANT B  —  RENEWAL & RETENTION
 
 B_E1_SUBJECTS = [
-    "free audit — {{company}} renewals",
-    "{{first_name}}, the quiet revenue leak",
+    "free audit for {{company}}",
+    "{{first_name}} the quiet revenue leak",
     "where {{company}} might be losing recurring revenue",
 ]
 
@@ -259,13 +252,13 @@ Hi {{first_name}},
 
 {{opening}}
 
-We're offering a free Revenue Leakage Audit for multi-location fitness businesses — a 20-minute call where we map out your current renewal flow and show you exactly where recurring revenue is slipping through.
+We put together a free Revenue Leakage Audit specifically for multi location fitness businesses. It is a short written breakdown we put together for you that maps exactly where recurring revenue is slipping through and what it is likely costing each month.
 
-No pitch. Just a diagnostic.
+No call needed. No pitch. We just share it with you and you decide what to do with it.
 
-The thing we look for specifically: how many members are lapsing each month across your {{branch_count}} locations without any automated system catching them — because in fitness, most churn isn't intentional, it's just nobody nudged them at the right moment.
+The thing we look at specifically is how many members are lapsing each month across your {{branch_count}} locations without any automated system catching them. In fitness most churn is not intentional. Members just did not get nudged at the right moment.
 
-Worth 20 minutes to find out where {{company}} stands?
+If you want us to put one together for {{company}} just say yes and we will get started.
 
 [Sender Name]
 Think Macro\
@@ -273,32 +266,32 @@ Think Macro\
 
 B_E2_SUBJECTS = [
     "the renewal math at scale",
-    "re: {{company}}",
+    "re {{company}}",
     "what we find in most retention audits",
 ]
 
 B_E2_BODY = """\
 Hi {{first_name}},
 
-A simple way to think about what the audit usually surfaces:
+Following up on the audit offer.
 
-If {{company}} has 500 active members across locations and just 5% lapse quietly each month without any system catching them — that's 25 members a month, 300 a year, gone without a nudge.
+Here is a simple way to think about what it usually surfaces. If {{company}} has 500 active members across locations and just 5 percent lapse quietly each month without any system catching them that is 25 members a month and 300 a year gone without a nudge.
 
-At even $80/month average, that's $24,000 in annual recurring revenue leaking out with no visibility.
+At even 80 dollars a month average membership that is 24000 dollars in annual recurring revenue leaking out with no visibility.
 
-The fix isn't complicated. A renewal tracking system that flags upcoming lapses, triggers personalised outreach automatically, and gives you a real-time retention dashboard by location.
+The fix is not complicated. A renewal tracking system that flags upcoming lapses, triggers personalised outreach automatically and gives a real time retention dashboard by location.
 
-We built exactly this for a multi-location fitness business. They recovered renewal revenue in the first quarter that covered the cost of the entire build.
+We built exactly this for a multi location fitness business. They recovered renewal revenue in the first quarter that covered the cost of the entire build.
 
-Still open to the 20-minute audit call?
+Still want the free audit sent through?
 
 [Sender Name]
 Think Macro\
 """
 
 B_E3_SUBJECTS = [
-    "what we built — retention system",
-    "{{first_name}}, the renewal build",
+    "what we built for a similar business",
+    "{{first_name}} the renewal build",
     "one specific example for {{company}}",
 ]
 
@@ -307,30 +300,26 @@ Hi {{first_name}},
 
 Last one from me.
 
-We built a member renewal and retention system for a fitness business losing members quietly across multiple locations. No one had visibility into who was at risk until they'd already left.
+We built a member renewal and retention system for a fitness business losing members quietly across multiple locations. No one had visibility into who was at risk until they had already left.
 
-What we built:
-- Renewal calendar synced across all branches
-- Automated outreach triggered 30, 14, and 3 days before lapse date
-- Win-back sequence for lapsed members
-- Retention dashboard showing at-risk members by location in real time
+We built a renewal calendar synced across all branches. We set up automated outreach that triggered 30, 14 and 3 days before each lapse date. We added a win back sequence for members who had already gone and gave the owner a retention dashboard showing at risk members by location in real time.
 
 The team stopped chasing renewals manually. The owner had full visibility across every location for the first time.
 
-If {{company}} is managing renewals manually across {{branch_count}} locations right now, there's a version of this worth building.
+If {{company}} is managing renewals manually across {{branch_count}} locations right now there is a version of this worth building.
 
-Worth a quick call?
+Want us to send you the full breakdown?
 
 [Sender Name]
 Think Macro\
 """
 
 
-# ── VARIANT C — OPERATIONS & VISIBILITY ──────────────────────────────────────
+# VARIANT C  —  OPERATIONS & VISIBILITY
 
 C_E1_SUBJECTS = [
-    "free ops audit — {{company}}",
-    "{{first_name}}, operations across {{branch_count}} locations",
+    "free ops audit for {{company}}",
+    "{{first_name}} operations across {{branch_count}} locations",
     "where {{company}} ops might be leaking revenue",
 ]
 
@@ -339,13 +328,13 @@ Hi {{first_name}},
 
 {{opening}}
 
-We're offering a free Revenue Leakage Audit for multi-location fitness businesses — a 20-minute call where we walk through your current operations across branches and pinpoint exactly where manual processes are costing you time and money.
+We put together a free Revenue Leakage Audit specifically for multi location fitness businesses. It is a short written breakdown we put together for you that maps where manual processes are costing you time and revenue across branches and what it is likely adding up to each month.
 
-No pitch. Just a diagnostic.
+No call needed. No pitch. We just share it with you and you decide what to do with it.
 
-The things we look for: scheduling gaps across locations, reporting that requires manual consolidation, and blind spots in branch performance that only show up weeks after the fact.
+The things we look at are scheduling gaps across locations, reporting that still requires manual consolidation and blind spots in branch performance that only show up weeks after the fact.
 
-Worth 20 minutes to find out what's slipping at {{company}}?
+If you want us to put one together for {{company}} just say yes and we will get started.
 
 [Sender Name]
 Think Macro\
@@ -353,7 +342,7 @@ Think Macro\
 
 C_E2_SUBJECTS = [
     "the ops scaling problem",
-    "re: {{company}}",
+    "re {{company}}",
     "what breaks at {{branch_count}} locations",
 ]
 
@@ -362,25 +351,21 @@ Hi {{first_name}},
 
 Following up on the audit offer.
 
-The pattern we see in most multi-location fitness businesses at your stage:
+Here is the pattern we see in most multi location fitness businesses at your stage. Trainer and class schedules are managed location by location manually so gaps and double bookings happen and staff friction builds. Each location reports separately so you are consolidating manually or not at all. And performance problems at a branch only surface weeks after the fact not in real time.
 
-- Scheduling: trainer and class schedules managed location by location, manually. Gaps and double-bookings happen. Staff friction builds.
-- Reporting: each location reports separately. You're consolidating manually, or not at all.
-- Visibility: you find out a location is underperforming weeks after the fact, not in real time.
+None of this is a people problem. It is a systems problem and it has a straightforward fix.
 
-None of this is a people problem. It's a systems problem — and it has a straightforward fix.
+We built an internal ops system for a fitness chain dealing with exactly this. Scheduling, branch dashboards and automated reporting all in one place. The owner went from spending half a day on ops to 30 minutes.
 
-We built an internal ops system for a fitness chain dealing with exactly this. Scheduling, branch dashboards, and automated reporting in one place. The owner went from spending half a day on ops to 30 minutes.
-
-The audit is 20 minutes and free. Still worth doing?
+The audit is free and we send it in writing. Still want it?
 
 [Sender Name]
 Think Macro\
 """
 
 C_E3_SUBJECTS = [
-    "what we built — ops system",
-    "{{first_name}}, one specific example",
+    "what we built for a similar business",
+    "{{first_name}} one specific example",
     "the build that might be relevant to {{company}}",
 ]
 
@@ -389,19 +374,15 @@ Hi {{first_name}},
 
 Last one from me.
 
-We built an internal operations system for a multi-location fitness business that had outgrown its manual processes. They had the locations, the members, the trainers — but no central system holding it together.
+We built an internal operations system for a multi location fitness business that had outgrown its manual processes. They had the locations, the members and the trainers but no central system holding it all together.
 
-What we built:
-- Trainer and class scheduling system across all branches
-- Live branch performance dashboard — revenue, attendance, member activity
-- Automated daily and weekly ops reports sent to the owner
-- Staff coordination tools replacing WhatsApp threads and spreadsheets
+We built a trainer and class scheduling system across all branches. We set up a live branch performance dashboard showing revenue, attendance and member activity in real time. We automated daily and weekly ops reports sent straight to the owner. We replaced the WhatsApp threads and spreadsheets with proper staff coordination tools.
 
-The ops overhead dropped significantly. The owner had real-time visibility across every location for the first time.
+The ops overhead dropped significantly. The owner had real time visibility across every location for the first time.
 
-If {{company}} is running anything manually across {{branch_count}} locations right now, this is worth a conversation.
+If {{company}} is running anything manually across {{branch_count}} locations right now this is worth a conversation.
 
-Would it be worth a quick call?
+Want us to send you the full breakdown?
 
 [Sender Name]
 Think Macro\
@@ -432,14 +413,13 @@ def route_variant(primary_pain):
         return "B"
     return "C"
 
-
 def fill(template, row, opening):
     return (template
-        .replace("{{first_name}}",  row["first_name"])
-        .replace("{{company}}",     row["company"])
-        .replace("{{branch_count}}",row["branch_count"])
-        .replace("{{opening}}",     opening)
-        .replace("{{cta}}",         row["cta"])
+        .replace("{{first_name}}",   row["first_name"])
+        .replace("{{company}}",      row["company"])
+        .replace("{{branch_count}}", row["branch_count"])
+        .replace("{{opening}}",      opening)
+        .replace("{{cta}}",          row["cta"])
     )
 
 
@@ -471,18 +451,13 @@ for row in leads:
     variant_counts[variant] += 1
     v = VARIANTS[variant]
 
-    # Generate rich personalized opening
     opening = generate_opening(row)
+    s = seed(row)
 
-    out = {}
-    for col in OUTPUT_COLS:
-        if col in row:
-            out[col] = row[col]
-
+    out = {col: row.get(col, "") for col in OUTPUT_COLS if col in row}
     out["variant"] = variant
     out["personalized_opening"] = opening
 
-    s = seed(row)
     for i in range(3):
         subj_opts = v["subjects"][i]
         subj = subj_opts[s % len(subj_opts)]
