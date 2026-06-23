@@ -9,7 +9,10 @@ import re
 import sys
 from pathlib import Path
 
-INPUT_FILE = "/root/.claude/uploads/6e5381e7-7eb3-5381-8acf-f90d402f2e69/799280ad-Gym_prospeo_person_export_20260618_151035_e11b5c.csv"
+INPUT_FILES = [
+    "/root/.claude/uploads/6e5381e7-7eb3-5381-8acf-f90d402f2e69/799280ad-Gym_prospeo_person_export_20260618_151035_e11b5c.csv",
+    "/root/.claude/uploads/6e5381e7-7eb3-5381-8acf-f90d402f2e69/99adc3e3-Think_Macro_Gym_prospeo_person_export_20260623_023933_9170b3.csv",
+]
 OUTPUT_FILE = "/home/user/SparqAI/campaign2_outbound_ready.csv"
 
 # ── CONSTANTS ──────────────────────────────────────────────────────────────────
@@ -607,11 +610,27 @@ def lead_priority_score(branch_count, ops_score, rev_leakage, social_score, is_d
 # ── MAIN PROCESSING ────────────────────────────────────────────────────────────
 
 def process():
-    with open(INPUT_FILE, newline="", encoding="utf-8-sig") as f:
-        reader = csv.DictReader(f)
-        rows = list(reader)
+    rows = []
+    for path in INPUT_FILES:
+        with open(path, newline="", encoding="utf-8-sig") as f:
+            reader = csv.DictReader(f)
+            batch = list(reader)
+            print(f"Loaded {len(batch):,} rows from {path.split('/')[-1]}")
+            rows.extend(batch)
 
-    print(f"Total raw rows: {len(rows)}")
+    # Deduplicate by email (keep first occurrence)
+    seen_emails = set()
+    deduped_input = []
+    for row in rows:
+        email = clean(row.get("Email", "")).lower()
+        if email and email not in seen_emails:
+            seen_emails.add(email)
+            deduped_input.append(row)
+        elif not email:
+            deduped_input.append(row)
+    print(f"\nTotal raw rows across all files: {len(rows):,}")
+    print(f"After email deduplication: {len(deduped_input):,}")
+    rows = deduped_input
 
     results = []
     filtered_out = 0
