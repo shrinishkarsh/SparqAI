@@ -3,31 +3,40 @@
 
 **Target:** Multi-location fitness operators (gyms, pilates, yoga, fitness studios)
 **Sender:** Think Macro / Sparq
-**Sequence length:** 4 emails
+**Sequence length:** 4 emails + LinkedIn touchpoint
 **Send cadence:** Day 1 → Day 4 → Day 8 → Day 14
 
 ---
 
-## SEQUENCE LOGIC
+## SEGMENT ROUTING
 
-| Lead Score | Primary Offer | Sequence Variant |
-|---|---|---|
-| Revenue leakage score 5 | Custom Ops System | Variant A — Direct pitch |
-| Revenue leakage score 3–4 | Free Revenue Audit | Variant B — Audit first |
-| Revenue leakage score 1–2 | Free Revenue Audit | Variant B — Audit first |
+Route by `primary_pain` column in `campaign2_outbound_ready.csv`:
+
+| primary_pain | Variant | Leads | Angle |
+|---|---|---|---|
+| Lead Leakage | **Variant A** | 677 | Revenue — lost leads = lost money |
+| Renewal Leakage | **Variant B** | 40 | Retention — quiet churn kills MRR |
+| Scheduling Chaos | **Variant C** | 508 | Ops — manual chaos costs you at scale |
+| No Branch Visibility | **Variant C** | 237 | Ops — you can't manage what you can't see |
+
+Use `{{personalized_opening}}` as first line of Email 1.
+Use `{{cta}}` as closing line of Email 1 and Email 3.
+Use `{{branch_count}}` and `{{company}}` as merge tags throughout.
+
+---
+---
+
+## VARIANT A — LEAD LEAKAGE
+*Angle: Every missed lead is lost revenue. You're spending on marketing but losing at follow-up.*
+*677 leads — primary_pain = Lead Leakage*
 
 ---
 
-## VARIANT A — DIRECT PITCH
-*For leads with revenue_leakage_score = 5 (227 leads)*
+### A · EMAIL 1 — Day 1
 
----
-
-### EMAIL 1 — Day 1
-**Subject options (A/B test):**
-- `{{company}} — quick question on operations`
-- `multi-location ops at {{company}}`
-- `how {{company}} handles renewals across {{branch_count}} locations`
+**Subject lines (A/B test 2):**
+- `{{company}} — lead follow-up question`
+- `how fast does {{company}} follow up on new inquiries`
 
 ---
 
@@ -35,9 +44,13 @@ Hi {{first_name}},
 
 {{personalized_opening}}
 
-At that scale, the two things that quietly hurt revenue most are missed lead follow-ups and lapsed member renewals — both tend to fall through the cracks when you're managing across locations without a centralized system.
+Quick question — when a new lead comes in across your locations, what does the follow-up look like?
 
-We build internal operations tools specifically for fitness businesses — things like auto-renewal reminders, lead CRMs, branch dashboards, and trainer scheduling systems. Nothing generic. Built around how your business actually runs.
+Most multi-location fitness businesses we talk to have the same gap: leads come in from ads, referrals, and walk-ins, but by the time someone follows up, the prospect has moved on or signed somewhere else.
+
+At {{branch_count}} locations, that adds up fast.
+
+We build internal lead management systems for fitness businesses — auto follow-up, lead tracking across branches, and visibility into where inquiries are dropping off. All built to your workflow, not a generic CRM.
 
 {{cta}}
 
@@ -46,55 +59,54 @@ Think Macro
 
 ---
 
-### EMAIL 2 — Day 4
-**Subject options:**
+### A · EMAIL 2 — Day 4
+
+**Subject lines:**
+- `the 1-hour rule in fitness`
 - `re: {{company}}`
-- `the renewal leakage problem`
-- `what {{branch_count}} locations usually looks like operationally`
 
 ---
 
 Hi {{first_name}},
 
-Wanted to follow up briefly.
+There's a stat that keeps coming up in fitness: leads contacted within the first hour are 7x more likely to convert than those contacted after.
 
-Most fitness operators at your stage are running a patchwork of spreadsheets, WhatsApp threads, and disconnected tools across locations. It works — until it doesn't.
+Across {{branch_count}} locations, without a system centralizing all inquiries and triggering auto follow-up — that window closes constantly.
 
-The specific things that tend to leak revenue at scale:
+The typical pattern we see:
+- Leads come in through different channels at different locations
+- Someone manually checks and responds — when they get to it
+- A chunk of those prospects have already signed somewhere else
 
-- Leads that come in and don't get followed up within the first hour
-- Members who lapse quietly because no one has visibility across branches
-- Trainer scheduling done manually, creating gaps and double-bookings
-- No single view of what's actually happening across all locations
+We fixed this for a gym chain by building a single lead inbox with auto-sequenced follow-ups by location. Conversion on new inquiries went up in the first 30 days.
 
-We recently built an internal ops system for a fitness business dealing with exactly this. Renewal recovery alone covered the cost of the build.
-
-Worth a 20-minute call to see if there's a fit?
+Worth a 20-minute call to walk through what that could look like for {{company}}?
 
 — [Sender Name]
 Think Macro
 
 ---
 
-### EMAIL 3 — Day 8
-**Subject options:**
-- `what we built for a similar business`
-- `case study — fitness ops system`
-- `{{first_name}}, one specific thing`
+### A · EMAIL 3 — Day 8
+
+**Subject lines:**
+- `what the build looked like`
+- `{{first_name}} — one specific example`
 
 ---
 
 Hi {{first_name}},
 
-One specific thing that might be relevant to {{company}}:
+We recently built an internal lead management system for a multi-location fitness business. The brief was simple: no lead should ever fall through the cracks again.
 
-We built a custom internal tool for a multi-location gym business that consolidated lead intake, automated renewal follow-ups, and gave the owner a single dashboard across all branches.
+What we built:
+- Central lead intake from all channels and all locations
+- Auto follow-up sequences triggered within minutes of inquiry
+- Owner dashboard showing lead volume, response time, and conversion by branch
 
-Before the build, they were losing leads daily and had no visibility into which locations were churning members fastest. After — their ops team spent 60% less time on admin and renewals recovered within the first quarter.
+The ops team stopped managing leads manually. The owner stopped guessing which locations were underperforming on new members.
 
-No off-the-shelf software. Built exactly for their workflows.
-
-If you're dealing with similar friction at {{company}}, I'd love to show you what that could look like for {{branch_count}} locations.
+If {{company}} is running anything manual across your {{branch_count}} locations right now — spreadsheets, shared inboxes, WhatsApp — there's likely a version of this that's worth building for you.
 
 {{cta}}
 
@@ -103,23 +115,21 @@ Think Macro
 
 ---
 
-### EMAIL 4 — Day 14 (Break-up)
-**Subject options:**
-- `closing the loop, {{first_name}}`
-- `last one from me`
-- `{{company}} — leaving this here`
+### A · EMAIL 4 — Day 14 (Break-up)
+
+**Subject lines:**
+- `last one from me, {{first_name}}`
+- `closing the loop`
 
 ---
 
 Hi {{first_name}},
 
-Last note from me — don't want to keep showing up uninvited.
+Last message — I know your inbox doesn't need another one.
 
-If operational complexity isn't a priority right now at {{company}}, totally understood. If it ever is — whether it's lead tracking, renewal automation, branch visibility, or scheduling — we'd love to be the first call.
+If lead management isn't the pain point at {{company}} right now, no problem. If it ever is — whether it's response time, branch-level visibility, or just getting out of spreadsheets — we'd love to be the first call.
 
-One question before I go: is there a better person on your team to connect with on the operations side?
-
-Either way, all the best with the growth.
+Before I go: is there a better person to connect with on operations at {{company}}?
 
 — [Sender Name]
 Think Macro
@@ -127,16 +137,17 @@ Think Macro
 ---
 ---
 
-## VARIANT B — AUDIT FIRST
-*For leads with revenue_leakage_score = 3–4 (998 leads)*
+## VARIANT B — RENEWAL & RETENTION
+*Angle: Memberships that lapse quietly are the most expensive kind of churn. You don't see it until it's gone.*
+*40 leads — primary_pain = Renewal Leakage*
 
 ---
 
-### EMAIL 1 — Day 1
-**Subject options (A/B test):**
-- `where {{company}} might be losing revenue`
-- `free audit — fitness ops`
-- `{{first_name}} — quick question`
+### B · EMAIL 1 — Day 1
+
+**Subject lines (A/B test 2):**
+- `the quiet revenue leak at {{company}}`
+- `membership renewals at {{branch_count}} locations`
 
 ---
 
@@ -144,72 +155,11 @@ Hi {{first_name}},
 
 {{personalized_opening}}
 
-We do something a bit different as a first step — before pitching anything, we run a free Revenue Leakage Audit for fitness businesses.
+Here's the thing about membership churn in fitness — most of it is avoidable. Members don't leave because they hate the gym. They leave because no one reached out at the right moment.
 
-In 20 minutes, we walk through your current lead flow, renewal process, and branch coordination and identify the top 3 places where revenue is likely slipping through.
+Across {{branch_count}} locations, without a system tracking renewal dates and triggering outreach automatically, a portion of your recurring revenue quietly disappears every month.
 
-No pitch. No obligation. Just a diagnostic.
-
-Most operators we do this with find at least one area they hadn't thought to look at.
-
-Worth 20 minutes?
-
-— [Sender Name]
-Think Macro
-
----
-
-### EMAIL 2 — Day 4
-**Subject options:**
-- `re: the audit`
-- `{{first_name}} — the 3 leaks most fitness chains have`
-- `what we find in most audits`
-
----
-
-Hi {{first_name}},
-
-Following up on the audit offer.
-
-The three things we almost always find in fitness businesses at your stage:
-
-**1. Lead response time.** Most inquiries go cold if they're not followed up within the first hour. At {{branch_count}} locations, that's a lot of missed starts.
-
-**2. Renewal gaps.** Members lapse not because they want to leave — but because no one nudged them at the right moment. Without automation across branches, this leaks steadily every month.
-
-**3. No consolidated view.** Owners spend hours pulling reports from different locations instead of seeing everything in one place.
-
-We find these in 20 minutes. Fix them in a custom build over a few weeks.
-
-Open to the call?
-
-— [Sender Name]
-Think Macro
-
----
-
-### EMAIL 3 — Day 8
-**Subject options:**
-- `what the build actually looks like`
-- `after the audit — what comes next`
-- `{{first_name}} — one more thing`
-
----
-
-Hi {{first_name}},
-
-Wanted to close the loop on what actually comes out of the audit.
-
-If we find meaningful leakage — which we almost always do — we propose a custom internal operations system built specifically for {{company}}. That typically includes some combination of:
-
-- Lead CRM with auto follow-up sequences
-- Member renewal automation
-- Trainer and class scheduling system
-- Branch performance dashboard
-
-Everything is built to your workflows. Nothing generic. No monthly SaaS fees.
-
-The audit is the starting point. It costs nothing and takes 20 minutes.
+We build internal renewal automation systems for fitness businesses — member renewal tracking, automated outreach sequences, and lapse alerts by location. Built for how your business works, not a generic tool.
 
 {{cta}}
 
@@ -218,11 +168,185 @@ Think Macro
 
 ---
 
-### EMAIL 4 — Day 14 (Break-up)
-**Subject options:**
+### B · EMAIL 2 — Day 4
+
+**Subject lines:**
+- `the renewal math at scale`
+- `re: {{company}}`
+
+---
+
+Hi {{first_name}},
+
+A simple way to think about this:
+
+If {{company}} has 500 active members across locations and 5% lapse quietly each month without any system catching them — that's 25 members a month, 300 a year, gone without a nudge.
+
+At even $80/month average, that's $24,000 in annual recurring revenue leaking out with no visibility.
+
+The fix isn't complicated. It's a renewal tracking system that flags upcoming lapses, triggers personalized outreach automatically, and gives you a dashboard of retention health by location.
+
+We built exactly this for a multi-location fitness business. They recovered renewal revenue in the first quarter that covered the cost of the build.
+
+Worth a quick call to see what this looks like for {{company}}?
+
+— [Sender Name]
+Think Macro
+
+---
+
+### B · EMAIL 3 — Day 8
+
+**Subject lines:**
+- `what we built — renewal system`
+- `{{first_name}} — the retention build`
+
+---
+
+Hi {{first_name}},
+
+Specific example that might be useful:
+
+We built a member renewal and retention system for a fitness business that was losing members quietly across multiple locations. No one had visibility into who was at risk until they'd already left.
+
+What we built:
+- Renewal calendar synced across all branches
+- Automated outreach triggered 30, 14, and 3 days before lapse date
+- Win-back sequence for lapsed members
+- Retention dashboard showing at-risk members by location in real time
+
+The team stopped chasing renewals manually. The owner could finally see retention health across every location in one view.
+
+If {{company}} is managing renewals manually across {{branch_count}} locations right now, there's a version of this worth building.
+
+{{cta}}
+
+— [Sender Name]
+Think Macro
+
+---
+
+### B · EMAIL 4 — Day 14 (Break-up)
+
+**Subject lines:**
+- `leaving this here, {{first_name}}`
+- `last one from me`
+
+---
+
+Hi {{first_name}},
+
+Last one from me on this.
+
+If member retention isn't the priority right now at {{company}}, completely understood. If it ever becomes one — renewals, lapse automation, branch-level visibility — we'd love to be the first call.
+
+One question before I go: what's the biggest operational challenge you're dealing with at {{company}} right now?
+
+— [Sender Name]
+Think Macro
+
+---
+---
+
+## VARIANT C — OPERATIONS & VISIBILITY
+*Angle: At a certain number of locations, manual operations become the ceiling. You can't grow what you can't see.*
+*745 leads — primary_pain = Scheduling Chaos OR No Branch Visibility*
+
+---
+
+### C · EMAIL 1 — Day 1
+
+**Subject lines (A/B test 2):**
+- `operations across {{branch_count}} locations`
+- `{{company}} — branch visibility question`
+
+---
+
+Hi {{first_name}},
+
+{{personalized_opening}}
+
+At {{branch_count}} locations, there's usually a point where operations stop scaling with you. The things that worked at 2 locations — shared spreadsheets, group chats, manual reporting — start creating friction at 5, 10, 15.
+
+The specific things that tend to break:
+- Trainer scheduling done manually, creating gaps and conflicts
+- No single view of what's happening across branches
+- The owner spending hours pulling reports instead of reading them
+
+We build internal operations systems for fitness businesses at exactly this stage. Branch dashboards, scheduling tools, reporting that updates itself. All built to how your business actually runs.
+
+{{cta}}
+
+— [Sender Name]
+Think Macro
+
+---
+
+### C · EMAIL 2 — Day 4
+
+**Subject lines:**
+- `the scaling problem in fitness ops`
+- `re: {{company}}`
+
+---
+
+Hi {{first_name}},
+
+Following up briefly.
+
+The pattern we see in most multi-location fitness businesses at your stage:
+
+- **Scheduling:** Trainer and class schedules managed location by location, manually. Gaps and double-bookings happen. Staff friction builds.
+- **Reporting:** Each location reports separately. You're consolidating manually or not at all.
+- **Visibility:** You find out a location is underperforming weeks after the fact, not in real time.
+
+None of this is a people problem. It's a systems problem. And it has a straightforward fix.
+
+We built an internal ops system for a fitness chain dealing with exactly this — scheduling, branch dashboards, and automated reporting in one place. The owner went from spending half a day on ops to 30 minutes.
+
+Open to a 20-minute call to see if there's a fit?
+
+— [Sender Name]
+Think Macro
+
+---
+
+### C · EMAIL 3 — Day 8
+
+**Subject lines:**
+- `what we built — operations system`
+- `{{first_name}} — the ops build`
+
+---
+
+Hi {{first_name}},
+
+One specific build that might be relevant to {{company}}:
+
+We built an internal operations system for a multi-location fitness business that had outgrown its manual processes. They had the locations, the members, the trainers — but no central system holding it all together.
+
+What we built:
+- Trainer and class scheduling system across all branches
+- Live branch performance dashboard — revenue, attendance, member activity
+- Automated daily/weekly ops reports sent to the owner
+- Staff coordination tools replacing WhatsApp threads and spreadsheets
+
+The ops overhead dropped significantly. The owner had real-time visibility across every location for the first time.
+
+If {{company}} is running anything manual across {{branch_count}} locations right now, this is likely worth a conversation.
+
+{{cta}}
+
+— [Sender Name]
+Think Macro
+
+---
+
+### C · EMAIL 4 — Day 14 (Break-up)
+
+**Subject lines:**
 - `last one, {{first_name}}`
 - `closing the loop on {{company}}`
-- `leaving this here`
 
 ---
 
@@ -230,13 +354,11 @@ Hi {{first_name}},
 
 Last message from me.
 
-If the timing isn't right for {{company}} right now — no problem at all. Growth priorities shift.
+If operations visibility isn't a priority right now at {{company}}, all good. If it ever becomes one — scheduling, branch dashboards, reporting — we'd love to be the first call.
 
-If you ever want a second set of eyes on your operations — lead flow, renewals, branch visibility — we're here.
+Before I go: what does day-to-day operations management look like across your locations right now?
 
-One thing I'm curious about before I go: what's the biggest operational headache at {{company}} right now?
-
-No agenda. Just genuinely curious.
+No pitch. Genuinely curious.
 
 — [Sender Name]
 Think Macro
@@ -244,42 +366,54 @@ Think Macro
 ---
 ---
 
-## LINKEDIN OUTREACH (Optional — use alongside email)
+## LINKEDIN TOUCHPOINT
+*Send on Day 6 (between Email 2 and Email 3) to leads who opened but didn't reply*
 
 ### Connection Request Note (300 chars max)
 
-> Hi {{first_name}} — came across {{company}} and noticed you're operating across {{branch_count}} locations. We build internal ops systems for fitness businesses — lead tracking, renewals, branch dashboards. Would love to connect.
+> Hi {{first_name}} — noticed {{company}} operates across {{branch_count}} locations. We build internal ops systems for fitness businesses — lead tracking, renewals, scheduling, branch dashboards. Thought it might be relevant. Would love to connect.
 
 ---
 
-### LinkedIn Follow-up Message (after connection accepted)
+### Message After Connection (variant-matched)
 
-> Thanks for connecting, {{first_name}}. We recently built an internal operations tool for a multi-location fitness business — covered lead flow, renewal automation, and gave the owner visibility across all branches. If any of that's relevant to {{company}}, happy to share what that looked like. Worth a quick chat?
+**Variant A (Lead Leakage):**
+> Thanks for connecting, {{first_name}}. We recently built an internal lead management system for a multi-location fitness business — central lead inbox, auto follow-up by location, conversion dashboard. If that's relevant to {{company}}, happy to share what it looked like. Worth a quick chat?
+
+**Variant B (Renewal):**
+> Thanks for connecting, {{first_name}}. We built a member renewal automation system for a fitness chain — renewal tracking, automated outreach, retention dashboard across all branches. If {{company}} is managing renewals manually right now, might be worth 20 minutes. Interested?
+
+**Variant C (Ops/Visibility):**
+> Thanks for connecting, {{first_name}}. We built an internal ops system for a multi-location fitness business — scheduling, branch dashboards, automated reporting. Replaced a lot of manual work. If {{company}} is at that stage, might be worth a quick conversation.
 
 ---
 ---
 
 ## COPY RULES (DO NOT VIOLATE)
 
-- Never mention: APIs, databases, backend systems, engineering, architecture, code
-- Never say: "we build software" or "our platform" or "our product"
-- Always say: "internal system", "custom tool", "operations tool", "we build it for you"
-- Pain first, solution second — always
-- Keep emails under 150 words (except Email 3 which can go to 200)
-- One CTA per email — never two
-- Subject lines: lowercase, no punctuation except dashes, 5 words max
+- Never say: APIs, databases, backend, engineering, architecture, code, software platform, SaaS
+- Always say: "internal system", "custom tool", "we build it for you", "built to your workflow"
+- Pain first — solution second — proof third — CTA last
+- One CTA per email, never two
+- Emails 1–2: under 120 words
+- Email 3: up to 200 words (proof email)
+- Email 4: under 80 words (break-up)
+- Subject lines: lowercase, max 6 words, no exclamation marks
 
 ---
 
-## SEGMENT ROUTING
-
-Use `revenue_leakage_score` column in `campaign2_outbound_ready.csv` to route:
+## FULL ROUTING SUMMARY
 
 ```
-revenue_leakage_score = 5  →  Variant A (227 leads)
-revenue_leakage_score = 3 or 4  →  Variant B (998 leads)
+primary_pain = "Lead Leakage"         →  Variant A  (677 leads)
+primary_pain = "Renewal Leakage"      →  Variant B  (40 leads)
+primary_pain = "Scheduling Chaos"     →  Variant C  (508 leads)
+primary_pain = "No Branch Visibility" →  Variant C  (237 leads)
 ```
 
-Use `personalized_opening` column as the first line of Email 1 verbatim.
-Use `cta` column as the closing line of Email 1 and Email 3 verbatim.
-Use `branch_count` for `{{branch_count}}` merge tag.
+Merge tags to pull from CSV:
+- `{{first_name}}` → `first_name`
+- `{{company}}` → `company`
+- `{{branch_count}}` → `branch_count`
+- `{{personalized_opening}}` → `personalized_opening`
+- `{{cta}}` → `cta`
