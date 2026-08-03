@@ -17,6 +17,7 @@ import LoginPortal from "@/pages/LoginPortal";
 import Help from "@/pages/Help";
 import Company from "@/pages/Company";
 import Products from "@/pages/Products";
+import VideoStudio from "@/pages/VideoStudio";
 
 import NotFound from "@/pages/not-found";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -57,6 +58,7 @@ function Router() {
           <Route path="/contacts" component={Contacts} />
           <Route path="/integrations" component={Integrations} />
           <Route path="/analytics" component={Analytics} />
+          <Route path="/video-studio" component={VideoStudio} />
 
           <Route path="/settings" component={Settings} />
           <Route path="/help" component={Help} />

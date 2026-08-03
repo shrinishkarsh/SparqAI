@@ -2,16 +2,29 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import path from "path";
+import fs from "fs";
+import multer from "multer";
 import { storage } from "./storage";
 import { openaiService } from "./services/openai";
 import { getSmartleadService, initializeSmartleadService } from "./services/smartlead";
-import { 
-  insertUserSchema, insertCompanySchema, insertCampaignSchema, 
-  insertContactSchema, insertActivitySchema, insertIntegrationSchema, insertProductSchema
+import {
+  insertUserSchema, insertCompanySchema, insertCampaignSchema,
+  insertContactSchema, insertActivitySchema, insertIntegrationSchema, insertProductSchema,
+  videoProjects, insertVideoProjectSchema
 } from "@shared/schema";
 import { login, register, logout, isAuthenticated } from "./auth";
 import { seedUserDemoData } from "./seedUserDemoData";
 import { z } from "zod";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
+import {
+  runTranscription,
+  runFillerRemoval,
+  getPackedTranscript,
+  getProjectDir,
+  getEditDir,
+  UPLOADS_DIR,
+} from "./services/video";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Custom authentication routes
@@ -594,6 +607,172 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Smartlead sync error:", error);
       res.status(500).json({ message: "Failed to sync with Smartlead" });
+    }
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // Video Studio Routes
+  // ─────────────────────────────────────────────────────────────
+
+  // Multer: save uploads to uploads/videos/tmp/
+  const videoUpload = multer({
+    dest: path.join(UPLOADS_DIR, "tmp"),
+    limits: { fileSize: 2 * 1024 * 1024 * 1024 }, // 2 GB
+    fileFilter: (_req, file, cb) => {
+      if (file.mimetype.startsWith("video/")) cb(null, true);
+      else cb(new Error("Only video files are accepted"));
+    },
+  });
+
+  // List projects
+  app.get("/api/video", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const projects = await db
+        .select()
+        .from(videoProjects)
+        .where(eq(videoProjects.userId, userId))
+        .orderBy(videoProjects.createdAt);
+      res.json(projects);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // Upload raw video → create project
+  app.post("/api/video/upload", isAuthenticated, videoUpload.single("video"), async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+
+      const name = (req.body.name as string) || req.file.originalname;
+
+      const [project] = await db
+        .insert(videoProjects)
+        .values({ userId, name, status: "pending" })
+        .returning();
+
+      // Move file into the project dir
+      const projectDir = getProjectDir(project.id);
+      fs.mkdirSync(projectDir, { recursive: true });
+      const ext = path.extname(req.file.originalname) || ".mp4";
+      const destPath = path.join(projectDir, `original${ext}`);
+      fs.renameSync(req.file.path, destPath);
+
+      await db
+        .update(videoProjects)
+        .set({ originalVideoPath: destPath, updatedAt: new Date() })
+        .where(eq(videoProjects.id, project.id));
+
+      res.json({ ...project, originalVideoPath: destPath });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // Get single project
+  app.get("/api/video/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const [project] = await db
+        .select()
+        .from(videoProjects)
+        .where(eq(videoProjects.id, parseInt(req.params.id)));
+      if (!project || project.userId !== userId)
+        return res.status(404).json({ message: "Not found" });
+      res.json(project);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // Start transcription
+  app.post("/api/video/:id/transcribe", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const projectId = parseInt(req.params.id);
+      const [project] = await db.select().from(videoProjects).where(eq(videoProjects.id, projectId));
+      if (!project || project.userId !== userId)
+        return res.status(404).json({ message: "Not found" });
+
+      // Fire-and-forget; client polls /api/video/:id
+      runTranscription(projectId).catch((e) =>
+        console.error(`Transcription failed for project ${projectId}:`, e.message)
+      );
+
+      res.json({ message: "Transcription started", status: "transcribing" });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // Get packed transcript
+  app.get("/api/video/:id/transcript", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const projectId = parseInt(req.params.id);
+      const [project] = await db.select().from(videoProjects).where(eq(videoProjects.id, projectId));
+      if (!project || project.userId !== userId)
+        return res.status(404).json({ message: "Not found" });
+      const md = await getPackedTranscript(projectId);
+      if (!md) return res.status(404).json({ message: "Transcript not ready yet" });
+      res.type("text/markdown").send(md);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // Start filler removal + render
+  app.post("/api/video/:id/edit", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const projectId = parseInt(req.params.id);
+      const [project] = await db.select().from(videoProjects).where(eq(videoProjects.id, projectId));
+      if (!project || project.userId !== userId)
+        return res.status(404).json({ message: "Not found" });
+
+      const config = req.body as {
+        fillers?: string[];
+        minSilence?: number;
+        grade?: string;
+        subtitles?: boolean;
+      };
+
+      // Save config to project
+      await db
+        .update(videoProjects)
+        .set({ editConfig: config, updatedAt: new Date() })
+        .where(eq(videoProjects.id, projectId));
+
+      runFillerRemoval(projectId, config).catch((e) =>
+        console.error(`Edit failed for project ${projectId}:`, e.message)
+      );
+
+      res.json({ message: "Edit pipeline started", status: "editing" });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // Download final video
+  app.get("/api/video/:id/download", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const projectId = parseInt(req.params.id);
+      const [project] = await db.select().from(videoProjects).where(eq(videoProjects.id, projectId));
+      if (!project || project.userId !== userId)
+        return res.status(404).json({ message: "Not found" });
+
+      const filePath = project.processedVideoPath || path.join(getEditDir(projectId), "final.mp4");
+      if (!fs.existsSync(filePath))
+        return res.status(404).json({ message: "Final video not ready" });
+
+      const name = `${project.name.replace(/[^a-z0-9]/gi, "_")}_edited.mp4`;
+      res.setHeader("Content-Disposition", `attachment; filename="${name}"`);
+      res.setHeader("Content-Type", "video/mp4");
+      fs.createReadStream(filePath).pipe(res);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
     }
   });
 

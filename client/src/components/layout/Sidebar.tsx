@@ -2,11 +2,11 @@ import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import logoImage from "@assets/design-a-bold-modern-tech-logo-for-sparq_14j9N13HTGSD3AzvAiwyqw_jl3gu8UgQQin7SY_z4jhiQ_1751562267235.jpeg";
 import { 
-  ChartLine, 
-  Megaphone, 
-  Users, 
-  BarChart3, 
-  Brain, 
+  ChartLine,
+  Megaphone,
+  Users,
+  BarChart3,
+  Brain,
   Workflow,
   Linkedin,
   Mail,
@@ -21,7 +21,8 @@ import {
   Target,
   Star,
   Building2,
-  Package
+  Package,
+  Film,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ const navigation = [
   { name: "Contacts", href: "/contacts", icon: Users, count: "2,847" },
   { name: "Integrations", href: "/integrations", icon: LinkIcon },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Video Studio", href: "/video-studio", icon: Film },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 

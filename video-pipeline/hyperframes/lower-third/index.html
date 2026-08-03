@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: transparent; overflow: hidden; }
+    #stage { width: 1920px; height: 1080px; position: relative; }
+
+    .lower-third {
+      position: absolute;
+      bottom: 100px;
+      left: 80px;
+      background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%);
+      padding: 16px 48px 16px 24px;
+      border-left: 4px solid #3B82F6;
+      transform: translateX(-120%);
+      opacity: 0;
+    }
+
+    .name {
+      font-family: 'Inter', 'Helvetica Neue', sans-serif;
+      font-size: 42px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+    }
+
+    .title {
+      font-family: 'Inter', 'Helvetica Neue', sans-serif;
+      font-size: 26px;
+      font-weight: 400;
+      color: #93C5FD;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <!-- data-composition-id, data-width, data-height on the stage -->
+  <div
+    id="stage"
+    data-composition-id="lower-third"
+    data-start="0"
+    data-width="1920"
+    data-height="1080"
+  >
+    <!-- Slide in at 0.5s, hold for 3.5s, slide out -->
+    <div
+      class="lower-third clip"
+      id="card"
+      data-start="0.5"
+      data-duration="3.5"
+      data-track-index="0"
+    >
+      <div class="name" id="speaker-name">Speaker Name</div>
+      <div class="title" id="speaker-title">Speaker Title</div>
+    </div>
+  </div>
+
+  <script>
+    // GSAP-style seek-safe animation
+    // HyperFrames calls window.__hf_seek(t) to position the composition
+    const card = document.getElementById('card');
+    const SLIDE_DUR = 0.3;
+    const HOLD_START = 0.5;
+    const HOLD_END = 4.0;
+
+    window.__hf_seek = function(t) {
+      const local = t - HOLD_START;
+      if (local < 0) {
+        card.style.transform = 'translateX(-120%)';
+        card.style.opacity = '0';
+        return;
+      }
+      if (local < SLIDE_DUR) {
+        const p = local / SLIDE_DUR;
+        card.style.transform = `translateX(${-120 + 120 * p}%)`;
+        card.style.opacity = String(p);
+        return;
+      }
+      const holdEnd = HOLD_END - HOLD_START;
+      if (local < holdEnd - SLIDE_DUR) {
+        card.style.transform = 'translateX(0%)';
+        card.style.opacity = '1';
+        return;
+      }
+      const outStart = holdEnd - SLIDE_DUR;
+      if (local < holdEnd) {
+        const p = 1 - (local - outStart) / SLIDE_DUR;
+        card.style.transform = `translateX(${-120 * (1 - p)}%)`;
+        card.style.opacity = String(p);
+        return;
+      }
+      card.style.transform = 'translateX(-120%)';
+      card.style.opacity = '0';
+    };
+  </script>
+</body>
+</html>

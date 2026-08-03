@@ -207,6 +207,27 @@ export const smartleadStats = pgTable("smartlead_stats", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const videoProjects = pgTable("video_projects", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id),
+  name: text("name").notNull(),
+  status: text("status").notNull().default("pending"),
+  // pending | transcribing | editing | rendering | adding_graphics | done | error
+  originalVideoPath: text("original_video_path"),
+  processedVideoPath: text("processed_video_path"),
+  transcriptPath: text("transcript_path"),
+  edlPath: text("edl_path"),
+  editConfig: jsonb("edit_config").default({}),
+  // { fillers: string[], minSilence: number, grade: string, subtitles: boolean }
+  motionGraphicsConfig: jsonb("motion_graphics_config").default({}),
+  // { type: "lower-third"|"none", name: string, title: string, startTime: number }
+  metadata: jsonb("metadata").default({}),
+  // { duration: number, resolution: string, wordCount: number, fillersRemoved: number }
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -295,3 +316,12 @@ export type InsertSmartleadLead = z.infer<typeof insertSmartleadLeadSchema>;
 
 export type SmartleadStat = typeof smartleadStats.$inferSelect;
 export type InsertSmartleadStat = z.infer<typeof insertSmartleadStatSchema>;
+
+export const insertVideoProjectSchema = createInsertSchema(videoProjects).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type VideoProject = typeof videoProjects.$inferSelect;
+export type InsertVideoProject = z.infer<typeof insertVideoProjectSchema>;
